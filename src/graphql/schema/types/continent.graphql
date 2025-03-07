@@ -1,0 +1,125 @@
+"""
+Represents a geographical continent
+
+Example Queries:
+
+1. Get all continents with their countries:
+"""
+type Continent {
+  """
+  Unique identifier for the continent
+  """
+  id: ID!
+
+  """
+  Full name of the continent
+  """
+  name: String!
+
+  """
+  Two-letter abbreviation code (e.g., 'EU' for Europe)
+  """
+  abbreviation: String!
+
+  """
+  List of countries within this continent
+  """
+  countries: [Country!]!
+
+  """
+  Statistics about visits to destinations in this continent
+  """
+  statistics: ContinentStats
+
+  """
+  Timestamp of when the record was created
+  """
+  created_at: DateTime!
+
+  """
+  Timestamp of the last update
+  """
+  updated_at: DateTime!
+}
+
+"""
+Represents statistics for a continent
+"""
+type ContinentStats {
+  """
+  Total number of visits to destinations in this continent
+  """
+  total_visits: Int!
+
+  """
+  Total number of destinations in this continent
+  """
+  total_destinations: Int!
+
+  """
+  Total number of countries in this continent
+  """
+  total_countries: Int!
+
+  """
+  Visit counts grouped by time period
+  """
+  visitsByPeriod: [VisitPeriod!]!
+}
+
+"""
+Represents visit counts for a specific time period
+"""
+type VisitPeriod {
+  """
+  The time period (e.g., '2024-01-01')
+  """
+  period: DateTime!
+
+  """
+  Number of visits in this period
+  """
+  count: Int!
+}
+
+"""
+Input type for specifying a time period
+"""
+input PeriodInput {
+  """
+  The time unit for grouping (e.g., 'day', 'week', 'month')
+  """
+  period: String!
+
+  """
+  Number of periods to return
+  """
+  count: Int!
+}
+
+extend type Query {
+  """
+  Retrieves all continents
+  """
+  continents: [Continent!]!
+
+  """
+  Finds a specific continent by its abbreviation
+  """
+  continent(abbreviation: String!): Continent
+
+  """
+  Finds continents based on a search term and order
+  """
+  continents(searchTerm: String, orderBy: String): [Continent!]!
+
+  """
+  Finds continent stats for a specific continent and period
+  """
+  continentStats(id: ID!, period: PeriodInput!): ContinentStats
+
+  """
+  Lists continents ordered by visit count
+  """
+  topContinentsByVisits(limit: Int): [Continent!]!
+} 

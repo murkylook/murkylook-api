@@ -1,0 +1,86 @@
+"""
+Represents a recorded visit to a destination by a user
+"""
+type Visit {
+  """
+  Unique identifier for the visit
+  """
+  id: ID!
+
+  """
+  The user who made the visit
+  """
+  user: User!
+
+  """
+  The destination that was visited
+  """
+  destination: Destination!
+
+  """
+  The date and time when the visit occurred
+  """
+  visited_at: DateTime!
+
+  """
+  Statistics about this visit
+  """
+  statistics: VisitStats
+
+  """
+  List of similar visits to the same destination by other users
+  """
+  similarVisits: [Visit!]!
+
+  """
+  Timestamp of when the visit was recorded
+  """
+  created_at: DateTime!
+
+  """
+  Timestamp of the last update to the visit record
+  """
+  updated_at: DateTime!
+}
+
+"""
+Represents statistics about visits
+"""
+type VisitStats {
+  """
+  Total number of visits
+  """
+  total_visits: Int!
+
+  """
+  Visit counts grouped by time period
+  """
+  visitsByPeriod: [VisitPeriod!]!
+
+  """
+  Most visited destinations
+  """
+  top_destinations: [Destination!]!
+
+  """
+  Most active users
+  """
+  top_users: [User!]!
+}
+
+extend type Query {
+  """
+  Retrieves all visits, optionally filtered by user and/or destination
+  """
+  visits(userId: ID, destinationId: ID): [Visit!]!
+
+  """
+  Finds a specific visit by ID
+  """
+  visit(id: ID!): Visit
+
+  """
+  Retrieves global statistics about visits
+  """
+  visitStats: VisitStats
+} 

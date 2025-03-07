@@ -1,0 +1,81 @@
+"""
+Represents a category that destinations can belong to
+"""
+type DestinationCategory {
+  """
+  Unique identifier for the category
+  """
+  id: ID!
+
+  """
+  Name of the category (e.g., 'Beaches', 'Mountains', 'Historical Sites')
+  """
+  name: String!
+
+  """
+  Detailed description of what this category represents
+  """
+  description: String
+
+  """
+  List of destinations that belong to this category
+  """
+  destinations: [Destination!]!
+
+  """
+  Statistics about this category
+  """
+  statistics: CategoryStats
+
+  """
+  Timestamp of when the record was created
+  """
+  created_at: DateTime!
+
+  """
+  Timestamp of the last update
+  """
+  updated_at: DateTime!
+}
+
+"""
+Represents statistics for a destination category
+"""
+type CategoryStats {
+  """
+  Total number of destinations in this category
+  """
+  total_destinations: Int!
+
+  """
+  Total number of visits to destinations in this category
+  """
+  total_visits: Int!
+
+  """
+  Visit counts grouped by time period
+  """
+  visitsByPeriod: [VisitPeriod!]!
+}
+
+extend type Query {
+  """
+  Retrieves all destination categories
+  """
+  categories: [DestinationCategory!]!
+
+  """
+  Finds a specific category by ID
+  """
+  category(id: ID!): DestinationCategory
+
+  """
+  Finds category stats for a specific category and period
+  """
+  categoryStats(id: ID!, period: PeriodInput!): CategoryStats
+
+  """
+  Lists categories ordered by visit count
+  """
+  popularCategories(limit: Int): [DestinationCategory!]!
+} 

@@ -1,0 +1,96 @@
+"""
+Represents a country within a continent
+"""
+type Country {
+  """
+  Unique identifier for the country
+  """
+  id: ID!
+
+  """
+  Full name of the country
+  """
+  name: String!
+
+  """
+  Two-letter country code (e.g., 'FR' for France)
+  """
+  abbreviation: String!
+
+  """
+  The continent this country belongs to
+  """
+  continent: Continent!
+
+  """
+  List of destinations within this country
+  """
+  destinations: [Destination!]!
+
+  """
+  Statistics about visits to destinations in this country
+  """
+  statistics: CountryStats
+
+  """
+  Timestamp of when the record was created
+  """
+  created_at: DateTime!
+
+  """
+  Timestamp of the last update
+  """
+  updated_at: DateTime!
+}
+
+"""
+Represents statistics for a country
+"""
+type CountryStats {
+  """
+  Total number of visits to destinations in this country
+  """
+  total_visits: Int!
+
+  """
+  Total number of destinations in this country
+  """
+  total_destinations: Int!
+
+  """
+  Visit counts grouped by time period
+  """
+  visitsByPeriod: [VisitPeriod!]!
+
+  """
+  Top destinations by visit count
+  """
+  topDestinations: [Destination!]!
+}
+
+extend type Query {
+  """
+  Retrieves all countries
+  """
+  countries: [Country!]!
+
+  """
+  Finds a specific country by its abbreviation
+  """
+  country(abbreviation: String!): Country
+
+  """
+  Finds countries based on a search term and order
+  """
+  countries(searchTerm: String, orderBy: String): [Country!]!
+
+  """
+  Finds country stats for a specific country and period
+  """
+  countryStats(id: ID!, period: PeriodInput!): CountryStats
+
+  """
+  Lists countries ordered by visit count
+  """
+  topCountriesByVisits(limit: Int): [Country!]!
+} 

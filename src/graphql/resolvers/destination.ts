@@ -20,7 +20,6 @@ export const destinationResolvers: IResolvers = {
          * Features:
          * - Basic destination information
          * - Country and continent context
-         * - Aggregated ratings
          * - Visit statistics
          * 
          * Example query:
@@ -29,12 +28,10 @@ export const destinationResolvers: IResolvers = {
          *     id
          *     name
          *     description
-         *     rating
          *     country {
          *       name
          *     }
          *     total_visits
-         *     average_rating
          *   }
          * }
          * 
@@ -66,7 +63,6 @@ export const destinationResolvers: IResolvers = {
          * - By country
          * - By continent
          * - By category
-         * - By rating range
          * - By visit count
          * 
          * Features:
@@ -78,19 +74,16 @@ export const destinationResolvers: IResolvers = {
          * query SearchDestinations(
          *   $searchTerm: String
          *   $countryId: ID
-         *   $minRating: Float
          *   $orderBy: DestinationOrderBy
          * ) {
          *   destinations(
          *     searchTerm: $searchTerm
          *     countryId: $countryId
-         *     minRating: $minRating
          *     orderBy: $orderBy
          *   ) {
          *     items {
          *       id
          *       name
-         *       rating
          *       country {
          *         name
          *       }
@@ -200,7 +193,6 @@ export const destinationResolvers: IResolvers = {
          * 
          * Statistics include:
          * - Visit trends over time
-         * - Rating analysis
          * - Visitor demographics
          * - Popular visit times
          * - Seasonal patterns
@@ -222,51 +214,21 @@ export const destinationResolvers: IResolvers = {
          * }
          */
         destinationStats: async (_, { id, period }, { pgPool }) => {
-            // Get basic stats
-            const basicStats = await pgPool.query(`
+            const result = await pgPool.query(`
                 SELECT 
-                    d.*,
-                    COUNT(DISTINCT v.id) as total_visits,
-                    COUNT(DISTINCT v.user_id) as unique_visitors,
-                    COALESCE(AVG(v.rating), 0) as average_rating
+                    COUNT(v.id) as total_visits,
+                    json_agg(
+                        json_build_object(
+                            'period', date_trunc('${period.period}', v.visited_at),
+                            'count', COUNT(v.id)
+                        )
+                    ) as visitsByPeriod
                 FROM destinations d
                 LEFT JOIN visits v ON v.destination_id = d.id
                 WHERE d.id = $1
                 GROUP BY d.id
             `, [id]);
-
-            // Get visits by period
-            const visitsByPeriod = await pgPool.query(`
-                SELECT 
-                    DATE_TRUNC($1, visited_at) as period,
-                    COUNT(*) as visit_count,
-                    COALESCE(AVG(rating), 0) as average_rating
-                FROM visits
-                WHERE destination_id = $2
-                GROUP BY period
-                ORDER BY period DESC
-                LIMIT $3
-            `, [period.period, id, period.count]);
-
-            // Get popular visit times
-            const popularTimes = await pgPool.query(`
-                SELECT 
-                    EXTRACT(HOUR FROM visited_at) as hour,
-                    COUNT(*) as visit_count
-                FROM visits
-                WHERE destination_id = $1
-                GROUP BY hour
-                ORDER BY visit_count DESC
-                LIMIT 5
-            `, [id]);
-
-            const response = {
-                ...basicStats.rows[0],
-                visitsByPeriod: visitsByPeriod.rows,
-                popularVisitTimes: popularTimes.rows
-            };
-
-            return response;
+            return result.rows[0];
         }
     },
 

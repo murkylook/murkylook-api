@@ -25,7 +25,7 @@ import { IResolvers } from '@graphql-tools/utils';
 export const continentResolvers: IResolvers = {
     Query: {
         /**
-         * Fetches a single continent by ID with full details
+         * Fetches a single continent by abbreviation with full details
          * 
          * Features:
          * - Basic continent information
@@ -34,8 +34,8 @@ export const continentResolvers: IResolvers = {
          * - Visit statistics
          * 
          * Example query:
-         * query GetContinent($id: ID!) {
-         *   continent(id: $id) {
+         * query GetContinent($abbreviation: String!) {
+         *   continent(abbreviation: $abbreviation) {
          *     id
          *     name
          *     total_countries
@@ -48,13 +48,16 @@ export const continentResolvers: IResolvers = {
          *   }
          * }
          * 
-         * @param id - Continent ID
+         * @param abbreviation - Continent abbreviation (e.g., 'EU', 'AS', 'NA')
          * @returns Continent object with full details
          */
-        continent: async (_, { id }, { pgPool }) => {
+        continent: async (_, { abbreviation }, { pgPool }) => {
+            console.log('=== Continent Resolver Called ===');
+            console.log('Parameters:', { abbreviation });
+            console.log('Context:', { pgPool: !!pgPool });
             const result = await pgPool.query(
-                'SELECT * FROM continents WHERE id = $1',
-                [id]
+                'SELECT * FROM continents WHERE abbreviation = $1',
+                [abbreviation]
             );
             return result.rows[0];
         },
@@ -86,6 +89,9 @@ export const continentResolvers: IResolvers = {
          * }
          */
         continents: async (_, { searchTerm, orderBy }, { pgPool }) => {
+            console.log('=== Continents List Resolver Called ===');
+            console.log('Parameters:', { searchTerm, orderBy });
+            
             let query = 'SELECT * FROM continents';
             const params = [];
 
@@ -238,8 +244,7 @@ export const continentResolvers: IResolvers = {
                 SELECT 
                     COUNT(DISTINCT co.id) as total_countries,
                     COUNT(DISTINCT d.id) as total_destinations,
-                    COUNT(DISTINCT v.id) as total_visits,
-                    COALESCE(AVG(d.rating), 0) as average_destination_rating
+                    COUNT(DISTINCT v.id) as total_visits
                 FROM continents c
                 LEFT JOIN countries co ON co.continent_id = c.id
                 LEFT JOIN destinations d ON d.country_id = co.id
@@ -247,7 +252,6 @@ export const continentResolvers: IResolvers = {
                 WHERE c.id = $1
                 GROUP BY c.id
             `, [parent.id]);
-
             return result.rows[0];
         }
     }

@@ -15,7 +15,7 @@ import { ApolloServer } from 'apollo-server-express';
 import { ApolloServerPluginDrainHttpServer } from 'apollo-server-core';
 import http from 'http';
 import dotenv from 'dotenv';
-import { Request, Response } from 'express';
+import { Request, Response, NextFunction } from 'express';
 
 // Load environment variables from .env file
 dotenv.config();
@@ -26,6 +26,10 @@ import { resolvers } from './graphql/resolvers';
 
 // Import our database configurations
 import { pgPool } from './config/database';
+
+// Add this before creating ApolloServer
+console.log('=== Resolvers being used ===');
+console.log(JSON.stringify(resolvers, null, 2));
 
 async function startApolloServer() {
     // Initialize Express application
@@ -40,6 +44,7 @@ async function startApolloServer() {
      * - Resolvers for handling queries/mutations
      * - Plugin for graceful shutdown
      * - Context function to inject dependencies
+     * - Debugging options
      */
     const server = new ApolloServer({
         typeDefs,
@@ -49,6 +54,16 @@ async function startApolloServer() {
             pgPool,  // Database connection pool
             req,     // HTTP request object
         }),
+        // Add these options for debugging
+        debug: true,
+        formatError: (error) => {
+            console.log('GraphQL Error:', error);
+            return error;
+        },
+        formatResponse: (response) => {
+            console.log('GraphQL Response:', response);
+            return response;
+        }
     });
 
     // Start the Apollo Server
@@ -69,7 +84,7 @@ async function startApolloServer() {
     console.log(`🚀 Server ready at http://localhost:${PORT}${server.graphqlPath}`);
 
     // Add error handling middleware
-    app.use((err: Error, req: Request, res: Response) => {
+    app.use((err: Error, req: Request, res: Response, _next: NextFunction) => {
         console.error(err.stack);
         res.status(500).send('Something broke!');
     });

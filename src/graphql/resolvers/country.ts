@@ -39,7 +39,6 @@ export const countryResolvers: IResolvers = {
          *     total_visits
          *     destinations(limit: 5) {
          *       name
-         *       rating
          *     }
          *   }
          * }
@@ -47,10 +46,10 @@ export const countryResolvers: IResolvers = {
          * @param id - Country ID
          * @returns Country object with full details
          */
-        country: async (_, { id }, { pgPool }) => {
+        country: async (_, { abbreviation }, { pgPool }) => {
             const result = await pgPool.query(
-                'SELECT * FROM countries WHERE id = $1',
-                [id]
+                'SELECT * FROM countries WHERE abbreviation = $1',
+                [abbreviation]
             );
             return result.rows[0];
         },
@@ -91,47 +90,22 @@ export const countryResolvers: IResolvers = {
          *   }
          * }
          */
-        countries: async (_, { 
-            searchTerm, 
-            continentId, 
-            orderBy,
-            limit = 10,
-            offset = 0
-        }, { pgPool }) => {
+        countries: async (_, { searchTerm, orderBy }, { pgPool }) => {
             let query = 'SELECT * FROM countries';
             const params = [];
-            let paramCount = 1;
 
-            // Build WHERE clause
-            const conditions = [];
-            
             if (searchTerm) {
-                conditions.push(`name ILIKE $${paramCount}`);
+                query += ' WHERE name ILIKE $1';
                 params.push(`%${searchTerm}%`);
-                paramCount++;
             }
 
-            if (continentId) {
-                conditions.push(`continent_id = $${paramCount}`);
-                params.push(continentId);
-                paramCount++;
-            }
-
-            if (conditions.length > 0) {
-                query += ` WHERE ${conditions.join(' AND ')}`;
-            }
-
-            // Add ordering
             if (orderBy) {
                 switch (orderBy) {
                     case 'DESTINATIONS_DESC':
-                        query += ` ORDER BY total_destinations DESC`;
+                        query += ' ORDER BY total_destinations DESC';
                         break;
                     case 'VISITS_DESC':
-                        query += ` ORDER BY total_visits DESC`;
-                        break;
-                    case 'RATING_DESC':
-                        query += ` ORDER BY average_rating DESC`;
+                        query += ' ORDER BY total_visits DESC';
                         break;
                     default:
                         query += ' ORDER BY name';
@@ -140,21 +114,8 @@ export const countryResolvers: IResolvers = {
                 query += ' ORDER BY name';
             }
 
-            // Add pagination
-            query += ` LIMIT $${paramCount} OFFSET $${paramCount + 1}`;
-            params.push(limit, offset);
-
             const result = await pgPool.query(query, params);
-
-            // Get total count for pagination
-            const countQuery = `SELECT COUNT(*) FROM countries ${conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : ''}`;
-            const totalCount = await pgPool.query(countQuery, params.slice(0, -2));
-
-            return {
-                items: result.rows,
-                totalCount: parseInt(totalCount.rows[0].count),
-                hasMore: offset + limit < parseInt(totalCount.rows[0].count)
-            };
+            return result.rows;
         },
 
         /**
@@ -164,21 +125,18 @@ export const countryResolvers: IResolvers = {
          * - Total destinations and visits
          * - Visit trends over time
          * - Popular destinations
-         * - Average ratings
          * 
          * Example query:
          * query CountryStats($id: ID!, $period: PeriodInput!) {
          *   countryStats(id: $id, period: $period) {
          *     total_visits
          *     total_destinations
-         *     average_destination_rating
          *     visitsByPeriod {
          *       period
          *       count
          *     }
          *     topDestinations {
          *       name
-         *       visit_count
          *     }
          *   }
          * }
@@ -274,10 +232,10 @@ export const countryResolvers: IResolvers = {
          * Resolves the destinations relationship
          * Returns paginated list of destinations in this country
          */
-        destinations: async (parent, { limit = 10, offset = 0 }, { pgPool }) => {
+        destinations: async (parent, _, { pgPool }) => {
             const result = await pgPool.query(
-                'SELECT * FROM destinations WHERE country_id = $1 ORDER BY name LIMIT $2 OFFSET $3',
-                [parent.id, limit, offset]
+                'SELECT * FROM destinations WHERE country_id = $1',
+                [parent.id]
             );
             return result.rows;
         },
@@ -290,15 +248,13 @@ export const countryResolvers: IResolvers = {
             const result = await pgPool.query(`
                 SELECT 
                     COUNT(DISTINCT d.id) as total_destinations,
-                    COUNT(DISTINCT v.id) as total_visits,
-                    COALESCE(AVG(d.rating), 0) as average_rating
+                    COUNT(DISTINCT v.id) as total_visits
                 FROM countries c
                 LEFT JOIN destinations d ON d.country_id = c.id
                 LEFT JOIN visits v ON v.destination_id = d.id
                 WHERE c.id = $1
                 GROUP BY c.id
             `, [parent.id]);
-
             return result.rows[0];
         }
     }

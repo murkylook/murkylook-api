@@ -1,7 +1,6 @@
 import { IResolvers } from '@graphql-tools/utils';
-import { GraphQLDateTime } from 'graphql-iso-date';
 
-// Import individual resolver files (we'll create these next)
+// Import individual resolver files
 import { continentResolvers } from './continent';
 import { countryResolvers } from './country';
 import { destinationResolvers } from './destination';
@@ -9,27 +8,31 @@ import { categoryResolvers } from './category';
 import { userResolvers } from './user';
 import { visitResolvers } from './visit';
 import { statisticsResolvers } from './statistics';
+import { breadcrumbResolvers } from './breadcrumb';
 
 export const resolvers: IResolvers = {
-    // Custom scalar for DateTime
-    DateTime: GraphQLDateTime,
-    // Combine all resolvers
-    Query: {
-        ...continentResolvers.Query,
-        ...countryResolvers.Query,
-        ...destinationResolvers.Query,
-        ...categoryResolvers.Query,
-        ...userResolvers.Query,
-        ...visitResolvers.Query,
-        ...statisticsResolvers.Query,
-    },
-
-    // Type resolvers
-    Continent: continentResolvers.Continent,
-    Country: countryResolvers.Country,
-    Destination: destinationResolvers.Destination,
-    DestinationCategory: categoryResolvers.DestinationCategory,
-    User: userResolvers.User,
-    Visit: visitResolvers.Visit,
-    Statistics: statisticsResolvers.Statistics,
+  Query: {
+    ...breadcrumbResolvers.Query,
+    ...continentResolvers.Query,
+    ...countryResolvers.Query,
+    ...destinationResolvers.Query,
+    ...categoryResolvers.Query,
+    ...userResolvers.Query,
+    ...visitResolvers.Query,
+    ...statisticsResolvers.Query
+  },
+  
+  Continent: continentResolvers.Continent || {},
+  Country: countryResolvers.Country || {},
+  Destination: destinationResolvers.Destination || {},
+  DestinationCategory: categoryResolvers.DestinationCategory || {},
+  User: userResolvers.User || {},
+  Visit: visitResolvers.Visit || {},
+  Statistics: statisticsResolvers.Statistics || {},
+  VisitStats: visitResolvers.VisitStats || {},
+  UserStats: userResolvers.UserStats || {},
+  CountryStats: countryResolvers.CountryStats || {},
+  ContinentStats: continentResolvers.ContinentStats || {},
+  CategoryStats: categoryResolvers.CategoryStats || {},
+  DestinationStats: destinationResolvers.DestinationStats || {}
 }; 

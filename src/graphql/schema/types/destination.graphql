@@ -1,0 +1,155 @@
+"""
+Represents a travel destination
+
+Example Queries:
+
+1. Get a specific destination with details:
+"""
+type Destination {
+  """
+  Unique identifier for the destination
+  """
+  id: ID!
+
+  """
+  Name of the destination
+  """
+  name: String!
+
+  """
+  Detailed description of the destination
+  """
+  description: String
+
+  """
+  The country where this destination is located
+  """
+  country: Country!
+
+  """
+  Single category of the destination
+  """
+  category: DestinationCategory
+
+  """
+  List of categories this destination belongs to
+  """
+  categories: [DestinationCategory!]!
+
+  """
+  List of recorded visits to this destination
+  """
+  visits: [Visit!]!
+
+  """
+  List of recent visitors to this destination
+  """
+  recentVisitors: [User!]!
+
+  """
+  Statistics about visits to this destination
+  """
+  statistics: DestinationStats
+
+  """
+  Timestamp of when the record was created
+  """
+  created_at: DateTime!
+
+  """
+  Timestamp of the last update
+  """
+  updated_at: DateTime!
+}
+
+"""
+Paginated connection type for destinations
+"""
+type DestinationConnection {
+  """
+  List of destinations in the current page
+  """
+  items: [Destination!]!
+
+  """
+  Total count of all matching destinations
+  """
+  totalCount: Int!
+
+  """
+  Indicates if there are more destinations to load
+  """
+  hasMore: Boolean!
+}
+
+"""
+Represents statistics for a destination
+"""
+type DestinationStats {
+  """
+  Total number of visits to this destination
+  """
+  total_visits: Int!
+
+  """
+  Visit counts grouped by time period
+  """
+  visitsByPeriod: [VisitPeriod!]!
+
+  """
+  Average rating of the destination
+  """
+  average_rating: Float!
+}
+
+extend type Query {
+  """
+  Finds a specific destination by ID
+  """
+  destination(id: ID!): Destination
+
+  """
+  Searches and filters destinations with pagination
+  """
+  destinations(
+    """
+    Search term for destination name or description
+    """
+    searchTerm: String
+
+    """
+    Filter by country ID
+    """
+    countryId: ID
+
+    """
+    Filter by continent ID
+    """
+    continentId: ID
+
+    """
+    Filter by category ID
+    """
+    categoryId: ID
+
+    """
+    Sorting option (e.g., 'VISITS_DESC', 'RECENTLY_ADDED')
+    """
+    orderBy: String
+
+    """
+    Number of items to return
+    """
+    limit: Int
+
+    """
+    Number of items to skip
+    """
+    offset: Int
+  ): DestinationConnection!
+
+  """
+  Finds destination stats for a specific destination and period
+  """
+  destinationStats(id: ID!, period: PeriodInput!): DestinationStats
+} 
