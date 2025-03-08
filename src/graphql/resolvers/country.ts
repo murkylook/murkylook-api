@@ -110,7 +110,7 @@ export const countryResolvers: IResolvers = {
 
         destinations: async (country: Country, _, { pgPool, loaders }: Context) => {
             return loaders.destinationLoader.loadMany(
-                (await pgPool.query('SELECT id FROM destinations WHERE country_id = $1', [country.id]))
+                (await pgPool.query('SELECT id FROM destinations WHERE country_id = $1 AND hidden = false', [country.id]))
                     .rows.map(row => row.id)
             );
         },

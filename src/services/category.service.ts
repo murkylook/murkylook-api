@@ -49,16 +49,15 @@ export class CategoryService extends BaseService<Category, CategoryInput, Catego
       SELECT 
         COUNT(DISTINCT d.id) as total_destinations,
         COUNT(DISTINCT v.id) as total_visits
-      FROM destination_categories dc
-      LEFT JOIN destinations d ON d.category_id = dc.id
+      FROM destinations d
       LEFT JOIN visits v ON v.destination_id = d.id
-      WHERE dc.id = $1`;
+      WHERE d.category_id = $1`;
 
     if (period) {
       query += ` AND v.visited_at >= NOW() - INTERVAL '${period.count} ${period.period}'`;
     }
 
-    query += ` GROUP BY dc.id`;
+    query += ` GROUP BY d.category_id`;
 
     const result = await this.pool.query(query, [categoryId]);
     

@@ -34,10 +34,10 @@ export const continentResolvers: IResolvers = {
                     COUNT(DISTINCT d.id) as total_destinations,
                     COUNT(DISTINCT co.id) as total_countries
                 FROM continents c
-                LEFT JOIN countries co ON co.continent_id = c.id
-                LEFT JOIN destinations d ON d.country_id = co.id
+                LEFT JOIN countries co ON co.continent_id = c.id AND co.hidden = false
+                LEFT JOIN destinations d ON d.country_id = co.id AND d.hidden = false
                 LEFT JOIN visits v ON v.destination_id = d.id
-                WHERE c.id = $1
+                WHERE c.id = $1 AND c.hidden = false
                 GROUP BY c.id
             `, [id]);
 
@@ -48,8 +48,8 @@ export const continentResolvers: IResolvers = {
                         DATE_TRUNC($1, v.visited_at) as period,
                         COUNT(*) as count
                     FROM visits v
-                    JOIN destinations d ON d.id = v.destination_id
-                    JOIN countries co ON co.id = d.country_id
+                    JOIN destinations d ON d.id = v.destination_id AND d.hidden = false
+                    JOIN countries co ON co.id = d.country_id AND co.hidden = false
                     WHERE co.continent_id = $2
                     GROUP BY period
                     ORDER BY period DESC
@@ -70,9 +70,10 @@ export const continentResolvers: IResolvers = {
                     c.*,
                     COUNT(v.id) as visit_count
                 FROM continents c
-                LEFT JOIN countries co ON co.continent_id = c.id
-                LEFT JOIN destinations d ON d.country_id = co.id
+                LEFT JOIN countries co ON co.continent_id = c.id AND co.hidden = false
+                LEFT JOIN destinations d ON d.country_id = co.id AND d.hidden = false
                 LEFT JOIN visits v ON v.destination_id = d.id
+                WHERE c.hidden = false
                 GROUP BY c.id
                 ORDER BY visit_count DESC
                 LIMIT $1
@@ -102,7 +103,7 @@ export const continentResolvers: IResolvers = {
     Continent: {
         countries: async (continent: Continent, _, { pgPool, loaders }: Context) => {
             const countryIds = (await pgPool.query(
-                'SELECT id FROM countries WHERE continent_id = $1 ORDER BY name ASC',
+                'SELECT id FROM countries WHERE continent_id = $1 AND hidden = false ORDER BY name ASC',
                 [continent.id]
             )).rows.map(row => row.id);
             

@@ -41,7 +41,7 @@ export const createLoaders = (pgPool: Pool): DataLoaders => {
 
   const batchLoadDestination = async (ids: readonly string[]): Promise<Destination[]> => {
     const result = await pgPool.query(
-      'SELECT * FROM destinations WHERE id = ANY($1)',
+      'SELECT * FROM destinations WHERE id = ANY($1) AND hidden = false',
       [ids]
     );
     const destinationsById = result.rows.reduce((acc, destination) => {

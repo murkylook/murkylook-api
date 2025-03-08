@@ -47,7 +47,7 @@ export class DestinationService extends BaseService<Destination, DestinationInpu
   async findByCountry(countryId: string): Promise<Destination[]> {
     const result = await this.pool.query<Destination>(
       `SELECT * FROM destinations 
-       WHERE country_id = $1 
+       WHERE country_id = $1 AND hidden = false
        ORDER BY name ASC`,
       [countryId]
     );
@@ -59,7 +59,9 @@ export class DestinationService extends BaseService<Destination, DestinationInpu
       `SELECT d.* 
        FROM destinations d
        JOIN countries c ON c.id = d.country_id
-       WHERE c.continent_id = $1
+       WHERE c.continent_id = $1 
+       AND d.hidden = false 
+       AND c.hidden = false
        ORDER BY d.name ASC`,
       [continentId]
     );
@@ -71,8 +73,9 @@ export class DestinationService extends BaseService<Destination, DestinationInpu
       `SELECT d.* 
        FROM destinations d
        JOIN countries c ON c.id = d.country_id
-       WHERE d.name ILIKE $1 
-          OR c.name ILIKE $1
+       WHERE (d.name ILIKE $1 OR c.name ILIKE $1)
+       AND d.hidden = false
+       AND c.hidden = false
        ORDER BY d.name ASC`,
       [`%${term}%`]
     );
@@ -82,21 +85,23 @@ export class DestinationService extends BaseService<Destination, DestinationInpu
   async findNearby(latitude: number, longitude: number, radiusKm: number): Promise<Destination[]> {
     // Using the Haversine formula to calculate distances
     const result = await this.pool.query<Destination>(
-      `SELECT *, 
+      `SELECT d.*, 
         (6371 * acos(
           cos(radians($1)) * 
-          cos(radians(latitude)) * 
-          cos(radians(longitude) - radians($2)) + 
+          cos(radians(d.latitude)) * 
+          cos(radians(d.longitude) - radians($2)) + 
           sin(radians($1)) * 
-          sin(radians(latitude))
+          sin(radians(d.latitude))
         )) AS distance
-       FROM destinations
+       FROM destinations d
+       JOIN countries c ON c.id = d.country_id
+       WHERE d.hidden = false AND c.hidden = false
        HAVING (6371 * acos(
           cos(radians($1)) * 
-          cos(radians(latitude)) * 
-          cos(radians(longitude) - radians($2)) + 
+          cos(radians(d.latitude)) * 
+          cos(radians(d.longitude) - radians($2)) + 
           sin(radians($1)) * 
-          sin(radians(latitude))
+          sin(radians(d.latitude))
         )) < $3
        ORDER BY distance`,
       [latitude, longitude, radiusKm]

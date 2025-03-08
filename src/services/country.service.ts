@@ -40,16 +40,18 @@ export class CountryService extends BaseService<Country, CountryInput, CountryUp
   }
 
   async getStats(id: string): Promise<{ total_destinations: number; total_visits: number }> {
-    const result = await this.pool.query<{ total_destinations: number; total_visits: number }>(
-      `SELECT total_visits, total_destinations
-       FROM countries 
-       WHERE id = $1`,
+    const result = await this.pool.query<{ total_visits: string; total_destinations: string }>(
+      `SELECT 
+        (SELECT COUNT(*) FROM destinations WHERE country_id = $1 AND hidden = false) as total_destinations,
+        (SELECT COUNT(*) FROM visits v
+         JOIN destinations d ON d.id = v.destination_id
+         WHERE d.country_id = $1 AND d.hidden = false) as total_visits`,
       [id]
     );
     
     return {
-      total_destinations: result.rows[0]?.total_destinations || 0,
-      total_visits: result.rows[0]?.total_visits || 0
+      total_destinations: parseInt(result.rows[0].total_destinations, 10),
+      total_visits: parseInt(result.rows[0].total_visits, 10)
     };
   }
 
@@ -66,7 +68,7 @@ export class CountryService extends BaseService<Country, CountryInput, CountryUp
   async findByContinent(continentId: string): Promise<Country[]> {
     const result = await this.pool.query<Country>(
       `SELECT * FROM countries 
-       WHERE continent_id = $1 
+       WHERE continent_id = $1 AND hidden = false
        ORDER BY name ASC`,
       [continentId]
     );

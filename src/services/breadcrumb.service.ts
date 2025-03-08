@@ -13,14 +13,38 @@ interface BreadcrumbTrail {
 }
 
 interface EntityInfo {
+  // For continent queries
+  name?: string;
+  abbreviation?: string;
+  // For country queries
+  country_name?: string;
+  country_abbr?: string;
+  continent_name?: string;
+  continent_abbr?: string;
+  // For destination queries
+  destination_name?: string;
+  destination_id?: string;
+}
+
+interface ContinentInfo extends EntityInfo {
   name: string;
   abbreviation: string;
+}
+
+interface CountryInfo extends EntityInfo {
   country_name: string;
   country_abbr: string;
   continent_name: string;
   continent_abbr: string;
+}
+
+interface DestinationInfo extends EntityInfo {
   destination_name: string;
   destination_id: string;
+  country_name: string;
+  country_abbr: string;
+  continent_name: string;
+  continent_abbr: string;
 }
 
 type QueryParam = string | number | boolean | null;
@@ -58,12 +82,51 @@ export class BreadcrumbService {
     return { text, tooltip, url, isActive };
   }
 
-  private async getEntityInfo(query: string, params: QueryParam[]): Promise<EntityInfo> {
-    const result = await this.pgPool.query<EntityInfo>(query, params);
+  private async getEntityInfo<T extends EntityInfo>(query: string, params: QueryParam[]): Promise<T> {
+    const result = await this.pgPool.query<T>(query, params);
     if (!result.rows[0]) {
       throw new Error('Entity not found');
     }
     return result.rows[0];
+  }
+
+  private async getContinentInfo(abbreviation: string): Promise<ContinentInfo> {
+    return this.getEntityInfo<ContinentInfo>(
+      'SELECT name, abbreviation FROM continents WHERE LOWER(abbreviation) = LOWER($1)',
+      [abbreviation]
+    );
+  }
+
+  private async getCountryInfo(countryAbbr: string, continentAbbr: string): Promise<CountryInfo> {
+    return this.getEntityInfo<CountryInfo>(
+      `SELECT 
+        c.name as country_name,
+        c.abbreviation as country_abbr,
+        cont.name as continent_name,
+        cont.abbreviation as continent_abbr
+      FROM countries c
+      JOIN continents cont ON cont.id = c.continent_id
+      WHERE LOWER(c.abbreviation) = LOWER($1)
+      AND LOWER(cont.abbreviation) = LOWER($2)`,
+      [countryAbbr, continentAbbr]
+    );
+  }
+
+  private async getDestinationInfo(id: string): Promise<DestinationInfo> {
+    return this.getEntityInfo<DestinationInfo>(
+      `SELECT 
+        d.name as destination_name,
+        d.id as destination_id,
+        c.name as country_name,
+        c.abbreviation as country_abbr,
+        cont.name as continent_name,
+        cont.abbreviation as continent_abbr
+      FROM destinations d
+      JOIN countries c ON c.id = d.country_id
+      JOIN continents cont ON cont.id = c.continent_id
+      WHERE d.id = $1`,
+      [id]
+    );
   }
 
   private getHomeItem(): BreadcrumbItem {
@@ -114,10 +177,7 @@ export class BreadcrumbService {
             throw new Error('Continent abbreviation required');
           }
 
-          const continentInfo = await this.getEntityInfo(
-            'SELECT name, abbreviation FROM continents WHERE LOWER(abbreviation) = LOWER($1)',
-            [params.continentAbbr]
-          );
+          const continentInfo = await this.getContinentInfo(params.continentAbbr);
 
           trail.push(this.getExploreItem(false));
           trail.push(this.createBreadcrumb(
@@ -138,20 +198,7 @@ export class BreadcrumbService {
             throw new Error('Continent and country abbreviations required');
           }
 
-          const countryInfo = await this.getEntityInfo(
-            `
-            SELECT 
-              c.name as country_name,
-              c.abbreviation as country_abbr,
-              cont.name as continent_name,
-              cont.abbreviation as continent_abbr
-            FROM countries c
-            JOIN continents cont ON cont.id = c.continent_id
-            WHERE LOWER(c.abbreviation) = LOWER($1)
-            AND LOWER(cont.abbreviation) = LOWER($2)
-            `,
-            [params.countryAbbr, params.continentAbbr]
-          );
+          const countryInfo = await this.getCountryInfo(params.countryAbbr, params.continentAbbr);
 
           trail.push(this.getExploreItem(false));
           trail.push(this.createBreadcrumb(
@@ -178,22 +225,7 @@ export class BreadcrumbService {
             throw new Error('Destination ID required');
           }
 
-          const destinationInfo = await this.getEntityInfo(
-            `
-            SELECT 
-              d.name as destination_name,
-              d.id as destination_id,
-              c.name as country_name,
-              c.abbreviation as country_abbr,
-              cont.name as continent_name,
-              cont.abbreviation as continent_abbr
-            FROM destinations d
-            JOIN countries c ON c.id = d.country_id
-            JOIN continents cont ON cont.id = c.continent_id
-            WHERE d.id = $1
-            `,
-            [params.destinationId]
-          );
+          const destinationInfo = await this.getDestinationInfo(params.destinationId);
 
           trail.push(this.getExploreItem(false));
           trail.push(this.createBreadcrumb(

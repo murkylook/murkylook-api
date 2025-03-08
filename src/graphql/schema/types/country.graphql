@@ -35,7 +35,7 @@ type Country {
   """
   Statistics about visits to destinations in this country
   """
-  statistics: CountryStats
+  stats: CountryStats
 
   """
   Timestamp of when the record was created

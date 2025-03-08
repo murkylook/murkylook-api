@@ -7,6 +7,8 @@ export interface Destination extends BaseEntity {
   latitude: number;
   longitude: number;
   image_url: string | null;
+  category_id: string | null;
+  hidden: boolean;
 }
 
 export interface DestinationFilters extends BaseFilters {

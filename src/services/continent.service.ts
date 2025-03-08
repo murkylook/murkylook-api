@@ -30,7 +30,7 @@ export class ContinentService extends BaseService<Continent, ContinentInput, Con
 
   async findByAbbreviation(abbreviation: string): Promise<Continent | null> {
     const result = await this.pool.query<Continent>(
-      'SELECT * FROM continents WHERE abbreviation = $1',
+      'SELECT * FROM continents WHERE abbreviation = $1 AND hidden = false',
       [abbreviation]
     );
     return result.rows[0] || null;
@@ -39,14 +39,14 @@ export class ContinentService extends BaseService<Continent, ContinentInput, Con
   async getStats(id: string): Promise<{ total_visits: number; total_countries: number; total_destinations: number }> {
     const result = await this.pool.query<{ total_visits: string; total_countries: string; total_destinations: string }>(
       `SELECT 
-        (SELECT COUNT(*) FROM countries WHERE continent_id = $1) as total_countries,
+        (SELECT COUNT(*) FROM countries WHERE continent_id = $1 AND hidden = false) as total_countries,
         (SELECT COUNT(*) FROM destinations d 
          JOIN countries c ON c.id = d.country_id 
-         WHERE c.continent_id = $1) as total_destinations,
+         WHERE c.continent_id = $1 AND d.hidden = false AND c.hidden = false) as total_destinations,
         (SELECT COUNT(*) FROM visits v
          JOIN destinations d ON d.id = v.destination_id
          JOIN countries c ON c.id = d.country_id
-         WHERE c.continent_id = $1) as total_visits`,
+         WHERE c.continent_id = $1 AND d.hidden = false AND c.hidden = false) as total_visits`,
       [id]
     );
     
@@ -60,7 +60,8 @@ export class ContinentService extends BaseService<Continent, ContinentInput, Con
   async search(term: string): Promise<Continent[]> {
     const result = await this.pool.query<Continent>(
       `SELECT * FROM continents 
-       WHERE name ILIKE $1 OR abbreviation ILIKE $1
+       WHERE (name ILIKE $1 OR abbreviation ILIKE $1)
+       AND hidden = false
        ORDER BY name ASC`,
       [`%${term}%`]
     );

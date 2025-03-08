@@ -30,7 +30,7 @@ export abstract class BaseService<T extends BaseEntity, CreateInput extends Reco
   async findById(id: string): Promise<T | null> {
     return this.withClient(async (client) => {
       const result = await client.query<T>(
-        `SELECT * FROM ${this.tableName} WHERE id = $1`,
+        `SELECT * FROM ${this.tableName} WHERE id = $1 AND hidden = false`,
         [id]
       );
       return result.rows[0] || null;
@@ -40,7 +40,7 @@ export abstract class BaseService<T extends BaseEntity, CreateInput extends Reco
   async findAll(options: QueryOptions = {}): Promise<T[]> {
     return this.withClient(async (client) => {
       const { filters, pagination, orderBy } = options;
-      const where: string[] = [];
+      const where: string[] = ['hidden = false'];
       const values: unknown[] = [];
       let orderByClause = 'ORDER BY created_at DESC';
       let limitClause = '';
