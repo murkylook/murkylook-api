@@ -12,12 +12,18 @@ interface BreadcrumbTrail {
   currentPage: string;
 }
 
-interface Breadcrumb {
-  id: string;
+interface EntityInfo {
   name: string;
-  type: 'destination' | 'country' | 'continent';
-  url: string;
+  abbreviation: string;
+  country_name: string;
+  country_abbr: string;
+  continent_name: string;
+  continent_abbr: string;
+  destination_name: string;
+  destination_id: string;
 }
+
+type QueryParam = string | number | boolean | null;
 
 // Define page types as a const for better type safety
 const PAGE_TYPES = {
@@ -52,8 +58,8 @@ export class BreadcrumbService {
     return { text, tooltip, url, isActive };
   }
 
-  private async getEntityInfo(query: string, params: any[]): Promise<any> {
-    const result = await this.pgPool.query(query, params);
+  private async getEntityInfo(query: string, params: QueryParam[]): Promise<EntityInfo> {
+    const result = await this.pgPool.query<EntityInfo>(query, params);
     if (!result.rows[0]) {
       throw new Error('Entity not found');
     }
@@ -228,21 +234,32 @@ export class BreadcrumbService {
     }
   }
 
-  async getBreadcrumbs(type: 'destination' | 'country' | 'continent', id: string): Promise<Breadcrumb[]> {
-    let result: Breadcrumb[];
-    switch (type) {
-      case 'destination':
-        result = await this.getDestinationBreadcrumbs(id);
+  async getBreadcrumbs(pageType: string, identifier: string): Promise<BreadcrumbTrail> {
+    // Parse the identifier based on pageType
+    const params: { continentAbbr?: string; countryAbbr?: string; destinationId?: string } = {};
+    
+    switch (pageType) {
+      case PAGE_TYPES.CONTINENT:
+        params.continentAbbr = identifier;
         break;
-      case 'country':
-        result = await this.getCountryBreadcrumbs(id);
+      case PAGE_TYPES.COUNTRY: {
+        const [contAbbr, cntryAbbr] = identifier.split('/');
+        if (!contAbbr || !cntryAbbr) {
+          throw new Error('Invalid country identifier format');
+        }
+        params.continentAbbr = contAbbr;
+        params.countryAbbr = cntryAbbr;
         break;
-      case 'continent':
-        result = await this.getContinentBreadcrumbs(id);
+      }
+      case PAGE_TYPES.DESTINATION:
+        params.destinationId = identifier;
         break;
-      default:
-        throw new Error(`Unknown breadcrumb type: ${type}`);
     }
-    return result;
+
+    const trail = await this.generateBreadcrumbs(pageType as PageType, params);
+    return {
+      items: trail.items,
+      currentPage: trail.currentPage
+    };
   }
 } 
