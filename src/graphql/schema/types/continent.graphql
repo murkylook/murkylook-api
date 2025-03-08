@@ -17,9 +17,19 @@ type Continent {
   name: String!
 
   """
+  Description of the continent
+  """
+  description: String
+
+  """
   Two-letter abbreviation code (e.g., 'EU' for Europe)
   """
   abbreviation: String!
+
+  """
+  URL to the continent's image
+  """
+  image_url: String
 
   """
   List of countries within this continent
@@ -29,7 +39,7 @@ type Continent {
   """
   Statistics about visits to destinations in this continent
   """
-  statistics: ContinentStats
+  stats: ContinentStats!
 
   """
   Timestamp of when the record was created
@@ -47,39 +57,14 @@ Represents statistics for a continent
 """
 type ContinentStats {
   """
-  Total number of visits to destinations in this continent
-  """
-  total_visits: Int!
-
-  """
-  Total number of destinations in this continent
-  """
-  total_destinations: Int!
-
-  """
   Total number of countries in this continent
   """
   total_countries: Int!
 
   """
-  Visit counts grouped by time period
+  Total number of destinations in this continent
   """
-  visitsByPeriod: [VisitPeriod!]!
-}
-
-"""
-Represents visit counts for a specific time period
-"""
-type VisitPeriod {
-  """
-  The time period (e.g., '2024-01-01')
-  """
-  period: DateTime!
-
-  """
-  Number of visits in this period
-  """
-  count: Int!
+  total_destinations: Int!
 }
 
 """
@@ -97,6 +82,26 @@ input PeriodInput {
   count: Int!
 }
 
+input ContinentFilters {
+  search: String
+  abbreviation: String
+  ids: [ID!]
+}
+
+input ContinentInput {
+  name: String!
+  description: String
+  abbreviation: String!
+  image_url: String
+}
+
+input ContinentUpdateInput {
+  name: String
+  description: String
+  abbreviation: String
+  image_url: String
+}
+
 extend type Query {
   """
   Retrieves all continents
@@ -106,12 +111,16 @@ extend type Query {
   """
   Finds a specific continent by its abbreviation
   """
-  continent(abbreviation: String!): Continent
+  continent(id: ID!): Continent
 
   """
   Finds continents based on a search term and order
   """
-  continents(searchTerm: String, orderBy: String): [Continent!]!
+  continents(
+    filter: ContinentFilters
+    pagination: PaginationInput
+    orderBy: OrderByInput
+  ): [Continent!]!
 
   """
   Finds continent stats for a specific continent and period
@@ -122,4 +131,14 @@ extend type Query {
   Lists continents ordered by visit count
   """
   topContinentsByVisits(limit: Int): [Continent!]!
+
+  continentByAbbreviation(abbreviation: String!): Continent
+
+  searchContinents(term: String!): [Continent!]!
+}
+
+extend type Mutation {
+  createContinent(input: ContinentInput!): Continent!
+  updateContinent(id: ID!, input: ContinentUpdateInput!): Continent!
+  deleteContinent(id: ID!): Continent!
 } 

@@ -22,6 +22,11 @@ type Destination {
   description: String
 
   """
+  URL of the destination's image
+  """
+  image_url: String
+
+  """
   The country where this destination is located
   """
   country: Country!
@@ -49,7 +54,7 @@ type Destination {
   """
   Statistics about visits to this destination
   """
-  statistics: DestinationStats
+  stats: DestinationStats
 
   """
   Timestamp of when the record was created
@@ -102,51 +107,82 @@ type DestinationStats {
   average_rating: Float!
 }
 
+"""
+Input type for destination filters
+"""
+input DestinationFilter {
+  """
+  Search by destination ID
+  """
+  id: ID
+
+  """
+  Search by destination name (case-insensitive, partial match)
+  """
+  name: String
+
+  """
+  Search by country abbreviation (e.g., 'GBR', 'FRA')
+  """
+  countryAbbrev: String
+
+  """
+  Search by continent abbreviation (e.g., 'EU', 'NA')
+  """
+  continentAbbrev: String
+
+  """
+  Search by category ID
+  """
+  categoryId: ID
+
+  """
+  Free text search for name or description
+  """
+  searchTerm: String
+}
+
+"""
+Enum for destination sorting options
+"""
+enum DestinationOrderBy {
+  NAME_ASC
+  NAME_DESC
+  VISITS_DESC
+  RECENTLY_ADDED
+  POPULARITY
+}
+
 extend type Query {
   """
-  Finds a specific destination by ID
+  Flexible destination query that can search by various criteria
   """
-  destination(id: ID!): Destination
-
-  """
-  Searches and filters destinations with pagination
-  """
-  destinations(
+  destination(
     """
-    Search term for destination name or description
+    Filter criteria for destinations
     """
-    searchTerm: String
+    filter: DestinationFilter
 
     """
-    Filter by country ID
+    Sorting option
     """
-    countryId: ID
+    orderBy: DestinationOrderBy
 
     """
-    Filter by continent ID
-    """
-    continentId: ID
-
-    """
-    Filter by category ID
-    """
-    categoryId: ID
-
-    """
-    Sorting option (e.g., 'VISITS_DESC', 'RECENTLY_ADDED')
-    """
-    orderBy: String
-
-    """
-    Number of items to return
+    Number of items to return (for multiple results)
     """
     limit: Int
 
     """
-    Number of items to skip
+    Number of items to skip (for pagination)
     """
     offset: Int
   ): DestinationConnection!
+
+  """
+  Returns a curated list of featured destinations
+  """
+  featuredDestinations: [Destination!]!
 
   """
   Finds destination stats for a specific destination and period

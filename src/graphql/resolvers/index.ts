@@ -1,6 +1,5 @@
 import { IResolvers } from '@graphql-tools/utils';
-
-// Import individual resolver files
+import { breadcrumbResolvers } from './breadcrumb';
 import { continentResolvers } from './continent';
 import { countryResolvers } from './country';
 import { destinationResolvers } from './destination';
@@ -8,9 +7,9 @@ import { categoryResolvers } from './category';
 import { userResolvers } from './user';
 import { visitResolvers } from './visit';
 import { statisticsResolvers } from './statistics';
-import { breadcrumbResolvers } from './breadcrumb';
 
-export const resolvers: IResolvers = {
+// Cast to any first to avoid TypeScript union type complexity
+const mergedResolvers = {
   Query: {
     ...breadcrumbResolvers.Query,
     ...continentResolvers.Query,
@@ -21,18 +20,20 @@ export const resolvers: IResolvers = {
     ...visitResolvers.Query,
     ...statisticsResolvers.Query
   },
-  
-  Continent: continentResolvers.Continent || {},
-  Country: countryResolvers.Country || {},
-  Destination: destinationResolvers.Destination || {},
-  DestinationCategory: categoryResolvers.DestinationCategory || {},
-  User: userResolvers.User || {},
-  Visit: visitResolvers.Visit || {},
-  Statistics: statisticsResolvers.Statistics || {},
-  VisitStats: visitResolvers.VisitStats || {},
-  UserStats: userResolvers.UserStats || {},
-  CountryStats: countryResolvers.CountryStats || {},
-  ContinentStats: continentResolvers.ContinentStats || {},
-  CategoryStats: categoryResolvers.CategoryStats || {},
-  DestinationStats: destinationResolvers.DestinationStats || {}
-}; 
+  Mutation: {
+    ...continentResolvers.Mutation,
+    ...countryResolvers.Mutation,
+    ...destinationResolvers.Mutation,
+    ...categoryResolvers.Mutation,
+    ...userResolvers.Mutation,
+    ...visitResolvers.Mutation
+  },
+  Continent: continentResolvers.Continent,
+  Country: countryResolvers.Country,
+  Destination: destinationResolvers.Destination,
+  Category: categoryResolvers.Category,
+  User: userResolvers.User,
+  Visit: visitResolvers.Visit
+} as any as IResolvers;
+
+export default mergedResolvers; 

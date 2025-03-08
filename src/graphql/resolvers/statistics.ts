@@ -1,53 +1,10 @@
-/**
- * Statistics Resolver
- * Handles all analytics and statistical queries across the application
- * 
- * Key features:
- * - Global statistics aggregation
- * - Trend analysis
- * - Period-based comparisons
- * - Performance metrics
- * - User engagement analytics
- * 
- * Common use cases:
- * - Dashboard analytics
- * - Trend reporting
- * - User behavior analysis
- * - Travel pattern insights
- */
-
 import { IResolvers } from '@graphql-tools/utils';
 import { AuthenticationError } from 'apollo-server-express';
+import { StatisticsService } from '../../services/statistics.service';
+import { Context } from '../../types/context';
 
 export const statisticsResolvers: IResolvers = {
     Query: {
-        /**
-         * Provides comprehensive global statistics across all entities
-         * 
-         * Features:
-         * - Total counts for all entities
-         * - Average ratings
-         * - Global engagement metrics
-         * - System-wide statistics
-         * 
-         * Authorization:
-         * - Admin only endpoint
-         * 
-         * Example query:
-         * query GetGlobalStats {
-         *   globalStatistics {
-         *     total_users
-         *     total_continents
-         *     total_countries
-         *     total_destinations
-         *     total_visits
-         *     average_destination_rating
-         *     average_visit_rating
-         *   }
-         * }
-         * 
-         * @throws AuthenticationError if not admin
-         */
         globalStatistics: async (_, __, { pgPool, currentUser }) => {
             if (!currentUser?.is_admin) {
                 throw new AuthenticationError('Only administrators can view global statistics');
@@ -64,27 +21,7 @@ export const statisticsResolvers: IResolvers = {
 
             return result.rows[0];
         },
-
-        /**
-         * Analyzes trending destinations and travel patterns
-         * 
-         * Features:
-         * - Popular destinations
-         * - Visit frequency
-         * - Rating trends
-         * - Geographic hotspots
-         * 
-         * Example query:
-         * query GetTrendingStats($days: Int) {
-         *   trendingStatistics(days: $days) {
-         *     id
-         *     name
-         *     country_name
-         *     visit_count
-         *     average_rating
-         *   }
-         * }
-         */
+        
         trendingStatistics: async (_, { days = 30 }, { pgPool, currentUser }) => {
             if (!currentUser) {
                 throw new AuthenticationError('You must be logged in to view trending statistics');
@@ -108,27 +45,24 @@ export const statisticsResolvers: IResolvers = {
             return result.rows;
         },
 
-        /**
-         * Compares statistics between two time periods
-         * 
-         * Features:
-         * - Period-over-period comparison
-         * - Growth metrics
-         * - Engagement changes
-         * - Performance trends
-         * 
-         * Example query:
-         * query ComparePeriods($period: String!) {
-         *   periodComparison(period: $period) {
-         *     current_visits
-         *     previous_visits
-         *     current_unique_visitors
-         *     previous_unique_visitors
-         *     current_avg_rating
-         *     previous_avg_rating
-         *     growth_percentage
-         *   }
-         * }
-         */
+        statistics: async (_, __, { pgPool }: Context) => {
+            const service = new StatisticsService(pgPool);
+            return service.getGlobalStats();
+        },
+
+        visitTrends: async (_, { period = 'month', limit = 12 }, { pgPool }: Context) => {
+            const service = new StatisticsService(pgPool);
+            return service.getVisitTrends(period, limit);
+        },
+
+        topDestinations: async (_, { limit = 10 }, { pgPool }: Context) => {
+            const service = new StatisticsService(pgPool);
+            return service.getTopDestinations(limit);
+        },
+
+        topCountries: async (_, { limit = 10 }, { pgPool }: Context) => {
+            const service = new StatisticsService(pgPool);
+            return service.getTopCountries(limit);
+        }
     }
 }; 

@@ -1,44 +1,39 @@
 import { IResolvers } from '@graphql-tools/utils';
+import { CategoryService } from '../../services/category.service';
+import { Context } from '../../types/context';
+import { Category } from '../../types/category';
 
 export const categoryResolvers: IResolvers = {
     Query: {
-        categories: async (_, __, { pgPool }) => {
-            const result = await pgPool.query('SELECT * FROM destination_categories');
-            return result.rows;
+        category: async (_, { id }, { pgPool }: Context) => {
+            const service = new CategoryService(pgPool);
+            return service.findById(id);
         },
 
-        category: async (_, { id }, { pgPool }) => {
-            const result = await pgPool.query('SELECT * FROM destination_categories WHERE id = $1', [id]);
-            return result.rows[0];
+        categories: async (_, { filter, pagination, orderBy }, { pgPool }: Context) => {
+            const service = new CategoryService(pgPool);
+            return service.findAll({ filters: filter, pagination, orderBy });
+        },
+
+        searchCategories: async (_, { term }, { pgPool }: Context) => {
+            const service = new CategoryService(pgPool);
+            return service.search(term);
         },
 
         categoryStats: async (_, { id, period }, { pgPool }) => {
-            const result = await pgPool.query(`
-                SELECT 
-                    COUNT(DISTINCT d.id) as total_destinations,
-                    COUNT(v.id) as total_visits,
-                    json_agg(
-                        json_build_object(
-                            'period', date_trunc('${period.period}', v.visited_at),
-                            'count', COUNT(v.id)
-                        )
-                    ) as visitsByPeriod
-                FROM destination_categories c
-                LEFT JOIN destinations d ON d.category_id = c.id
-                LEFT JOIN visits v ON v.destination_id = d.id
-                WHERE c.id = $1
-                GROUP BY c.id
-            `, [id]);
-            return result.rows[0];
+            const service = new CategoryService(pgPool);
+            return service.getStats(id, period);
         },
 
         popularCategories: async (_, { limit = 10 }, { pgPool }) => {
             const result = await pgPool.query(`
-                SELECT c.*, COUNT(v.id) as visit_count
-                FROM destination_categories c
-                LEFT JOIN destinations d ON d.category_id = c.id
+                SELECT 
+                    dc.*,
+                    COUNT(v.id) as visit_count
+                FROM destination_categories dc
+                LEFT JOIN destinations d ON d.category_id = dc.id
                 LEFT JOIN visits v ON v.destination_id = d.id
-                GROUP BY c.id
+                GROUP BY dc.id
                 ORDER BY visit_count DESC
                 LIMIT $1
             `, [limit]);
@@ -46,33 +41,32 @@ export const categoryResolvers: IResolvers = {
         }
     },
 
-    DestinationCategory: {
-        destinations: async (parent, _, { pgPool }) => {
-            const result = await pgPool.query(
-                'SELECT * FROM destinations WHERE category_id = $1',
-                [parent.id]
-            );
-            return result.rows;
+    Mutation: {
+        createCategory: async (_, { input }, { pgPool }: Context) => {
+            const service = new CategoryService(pgPool);
+            return service.create(input);
         },
 
-        statistics: async (parent, { period = { period: 'month', count: 12 } }, { pgPool }) => {
-            const result = await pgPool.query(`
-                SELECT 
-                    COUNT(DISTINCT d.id) as total_destinations,
-                    COUNT(v.id) as total_visits,
-                    json_agg(
-                        json_build_object(
-                            'period', date_trunc('${period.period}', v.visited_at),
-                            'count', COUNT(v.id)
-                        )
-                    ) as visitsByPeriod
-                FROM destination_categories c
-                LEFT JOIN destinations d ON d.category_id = c.id
-                LEFT JOIN visits v ON v.destination_id = d.id
-                WHERE c.id = $1
-                GROUP BY c.id
-            `, [parent.id]);
-            return result.rows[0];
+        updateCategory: async (_, { id, input }, { pgPool }: Context) => {
+            const service = new CategoryService(pgPool);
+            return service.update(id, input);
+        },
+
+        deleteCategory: async (_, { id }, { pgPool }: Context) => {
+            const service = new CategoryService(pgPool);
+            return service.delete(id);
+        }
+    },
+
+    Category: {
+        destinations: async (category: Category, _, { pgPool }: Context) => {
+            const service = new CategoryService(pgPool);
+            return service.getDestinations(category.id);
+        },
+
+        stats: async (category: Category, _, { pgPool }: Context) => {
+            const service = new CategoryService(pgPool);
+            return service.getStats(category.id);
         }
     }
 }; 

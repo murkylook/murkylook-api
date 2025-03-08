@@ -12,6 +12,13 @@ interface BreadcrumbTrail {
   currentPage: string;
 }
 
+interface Breadcrumb {
+  id: string;
+  name: string;
+  type: 'destination' | 'country' | 'continent';
+  url: string;
+}
+
 // Define page types as a const for better type safety
 const PAGE_TYPES = {
   HOME: 'home',
@@ -221,16 +228,21 @@ export class BreadcrumbService {
     }
   }
 
-  async getBreadcrumbs(_pageType: string, _identifier: string): Promise<BreadcrumbTrail> {
-    // Implementation of getBreadcrumbs method
-    return {
-        items: [{
-            text: 'Home',
-            tooltip: 'Return to homepage',
-            url: '/',
-            isActive: true
-        }],
-        currentPage: 'Home'
-    };
+  async getBreadcrumbs(type: 'destination' | 'country' | 'continent', id: string): Promise<Breadcrumb[]> {
+    let result: Breadcrumb[];
+    switch (type) {
+      case 'destination':
+        result = await this.getDestinationBreadcrumbs(id);
+        break;
+      case 'country':
+        result = await this.getCountryBreadcrumbs(id);
+        break;
+      case 'continent':
+        result = await this.getContinentBreadcrumbs(id);
+        break;
+      default:
+        throw new Error(`Unknown breadcrumb type: ${type}`);
+    }
+    return result;
   }
 } 

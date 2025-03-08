@@ -18,6 +18,11 @@ type Country {
   abbreviation: String!
 
   """
+  URL to the country's image
+  """
+  image_url: String
+
+  """
   The continent this country belongs to
   """
   continent: Continent!
