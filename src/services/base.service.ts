@@ -42,7 +42,7 @@ export abstract class BaseService<T extends BaseEntity, CreateInput extends Reco
       const { filters, pagination, orderBy } = options;
       const where: string[] = ['hidden = false'];
       const values: unknown[] = [];
-      let orderByClause = 'ORDER BY created_at DESC';
+      let orderByClause = 'ORDER BY name ASC';
       let limitClause = '';
       let offsetClause = '';
 
