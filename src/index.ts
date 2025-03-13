@@ -6,6 +6,7 @@ import http from 'http';
 import dotenv from 'dotenv';
 import cors from 'cors';
 import { json } from 'body-parser';
+import cookieParser from 'cookie-parser';
 import { pgPool } from './config/database';
 import { typeDefs } from './graphql/schema';
 import resolvers from './graphql/resolvers';
@@ -73,11 +74,13 @@ async function startServer() {
     '/graphql',
     cors<cors.CorsRequest>(corsOptions),
     json(),
+    cookieParser(),
     expressMiddleware(server, {
       context: async ({ req }) => ({
         pgPool,
         req,
-        loaders: createLoaders(pgPool)
+        loaders: createLoaders(pgPool),
+        user: (req as any).user
       })
     })
   );

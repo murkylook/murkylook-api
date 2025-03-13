@@ -141,6 +141,11 @@ export const typeDefs = gql`
     updated_at: DateTime!
   }
 
+  type AuthResponse {
+    user: User!
+    token: String!
+  }
+
   type Query {
     # Continent queries
     continents: [Continent!]!
@@ -198,12 +203,32 @@ export const typeDefs = gql`
       columnName: String!
       languageId: ID!
     ): Translation
+
+    # Auth queries
+    me: User
   }
 
   type Mutation {
     # Visit/View mutations
     recordDestinationVisit(userId: ID!, destinationId: ID!): DestinationVisit!
     recordHighlightView(userId: ID!, highlightId: ID!): HighlightView!
+
+    # Auth mutations
+    register(input: RegisterInput!): AuthResponse!
+    login(input: LoginInput!): AuthResponse!
+    logout: Boolean!
+  }
+
+  input RegisterInput {
+    name: String!
+    username: String!
+    email: String!
+    password: String!
+  }
+
+  input LoginInput {
+    email: String!
+    password: String!
   }
 
   scalar DateTime

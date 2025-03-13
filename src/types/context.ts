@@ -13,6 +13,10 @@ export interface Context {
     pgPool: Pool;
     req: Request;
     loaders: DataLoaders;
+    user?: {
+        id: number;
+        role: string;
+    };
 }
 
 export interface DataLoaders {
