@@ -1,7 +1,15 @@
 export interface User {
-    id: string;
-    email: string;
-    username: string;
-    created_at: Date;
-    updated_at: Date;
+  id: number;
+  name: string;
+  username: string;
+  email: string;
+  password_hash: string;
+  is_active: boolean;
+  last_login_at: Date | null;
+  role: string;
+  avatar_url: string | null;
+  bio: string | null;
+  preferences: Record<string, any>;
+  created_at: Date;
+  updated_at: Date;
 } 

@@ -2,12 +2,11 @@ import { Pool } from 'pg';
 import { Request } from 'express';
 import DataLoader from 'dataloader';
 import { Country } from './country';
-import { Category } from './category';
+import { DestinationType } from './destination-type';
 import { Continent } from './continent';
 import { Destination } from './destination';
-import { User } from './user';
-import { Visit } from './visit';
-import { BaseFilters, PaginationArgs, OrderByArgs } from './base';
+import { Highlight } from './highlight';
+import { Language } from './language';
 
 export interface Context {
     pgPool: Pool;
@@ -15,18 +14,11 @@ export interface Context {
     loaders: DataLoaders;
 }
 
-export interface AuthContext extends Context {
-    userId: string;
-    roles: string[];
-}
-
 export interface DataLoaders {
-  countryLoader: DataLoader<string, Country>;
-  categoryLoader: DataLoader<string, Category>;
-  continentLoader: DataLoader<string, Continent>;
-  destinationLoader: DataLoader<string, Destination>;
-  userLoader: DataLoader<string, User>;
-  visitLoader: DataLoader<string, Visit>;
+  continentLoader: DataLoader<number, Continent, number>;
+  countryLoader: DataLoader<number, Country, number>;
+  destinationTypeLoader: DataLoader<number, DestinationType, number>;
+  destinationLoader: DataLoader<number, Destination, number>;
+  highlightLoader: DataLoader<number, Highlight, number>;
+  languageLoader: DataLoader<number, Language, number>;
 }
-
-export { BaseFilters, PaginationArgs, OrderByArgs }; 

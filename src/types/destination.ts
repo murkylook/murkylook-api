@@ -1,42 +1,18 @@
-import { BaseEntity, BaseFilters } from './base';
-
-export interface Destination extends BaseEntity {
+export interface Destination {
+  id: number;
+  country_id: number;
+  type_id: number;
   name: string;
   description: string | null;
-  country_id: string;
-  latitude: number;
-  longitude: number;
+  latitude: number | null;
+  longitude: number | null;
+  founded_year: number | null;
+  best_season_start: Date | null;
+  best_season_end: Date | null;
+  visit_count: number;
+  highlight_count: number;
+  created_at: Date;
+  updated_at: Date;
   image_url: string | null;
-  category_id: string | null;
   hidden: boolean;
 }
-
-export interface DestinationFilters extends BaseFilters {
-  country_id?: string;
-  continent_id?: string;
-  category_id?: string;
-  latitude_min?: number;
-  latitude_max?: number;
-  longitude_min?: number;
-  longitude_max?: number;
-}
-
-export interface DestinationInput {
-  name: string;
-  description?: string | null;
-  country_id: string;
-  latitude: number;
-  longitude: number;
-  image_url?: string | null;
-  category_ids?: string[];
-}
-
-export interface DestinationUpdateInput {
-  name?: string;
-  description?: string | null;
-  country_id?: string;
-  latitude?: number;
-  longitude?: number;
-  image_url?: string | null;
-  category_ids?: string[];
-} 

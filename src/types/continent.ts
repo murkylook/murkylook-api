@@ -1,26 +1,12 @@
-import { BaseEntity, BaseFilters } from './base';
-
-export interface Continent extends BaseEntity {
+export interface Continent {
+  id: number;
   name: string;
-  description: string | null;
-  abbreviation: string;
-  image_url: string | null;
+  code: string;
+  visit_count: number;
+  country_count: number;
+  created_at: Date;
+  updated_at: Date;
+  hidden: boolean;
+  image_url?: string;
+  description?: string;
 }
-
-export interface ContinentFilters extends BaseFilters {
-  abbreviation?: string;
-}
-
-export interface ContinentInput {
-  name: string;
-  description?: string | null;
-  abbreviation: string;
-  image_url?: string | null;
-}
-
-export interface ContinentUpdateInput {
-  name?: string;
-  description?: string | null;
-  abbreviation?: string;
-  image_url?: string | null;
-} 

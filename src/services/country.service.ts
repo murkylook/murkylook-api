@@ -1,77 +1,74 @@
 import { Pool } from 'pg';
-import { BaseService } from './base.service';
-import { 
-  Country,
-  CountryInput,
-  CountryUpdateInput,
-  CountryFilters 
-} from '../types/country';
-import { BaseFilters } from '../types/base';
+import { Country } from '../types/country';
 
-export class CountryService extends BaseService<Country, CountryInput, CountryUpdateInput> {
-  constructor(pool: Pool) {
-    super(pool, 'countries');
+export class CountryService {
+  constructor(private readonly pool: Pool) {}
+
+  async getAll(): Promise<Country[]> {
+    const query = `
+      SELECT *
+      FROM countries
+      WHERE hidden = false
+      ORDER BY name ASC
+    `;
+    
+    const result = await this.pool.query<Country>(query);
+    return result.rows;
   }
 
-  protected mapFilters(filters: BaseFilters): Record<string, any> {
-    const typedFilters = filters as CountryFilters;
-    return {
-      ...(typedFilters.search && { 
-        name: typedFilters.search 
-      }),
-      ...(typedFilters.abbreviation && { 
-        abbreviation: typedFilters.abbreviation 
-      }),
-      ...(typedFilters.continent_id && {
-        continent_id: typedFilters.continent_id
-      }),
-      ...(typedFilters.ids?.length && {
-        id: typedFilters.ids
-      })
-    };
-  }
-
-  async findByAbbreviation(abbreviation: string): Promise<Country | null> {
-    const result = await this.pool.query<Country>(
-      'SELECT * FROM countries WHERE abbreviation = $1',
-      [abbreviation]
-    );
+  async getById(id: number): Promise<Country | null> {
+    const query = `
+      SELECT *
+      FROM countries
+      WHERE id = $1 AND hidden = false
+    `;
+    
+    const result = await this.pool.query<Country>(query, [id]);
     return result.rows[0] || null;
   }
 
-  async getStats(id: string): Promise<{ total_destinations: number; total_visits: number }> {
-    const result = await this.pool.query<{ total_visits: string; total_destinations: string }>(
-      `SELECT 
-        (SELECT COUNT(*) FROM destinations WHERE country_id = $1 AND hidden = false) as total_destinations,
-        (SELECT COUNT(*) FROM visits v
-         JOIN destinations d ON d.id = v.destination_id
-         WHERE d.country_id = $1 AND d.hidden = false) as total_visits`,
-      [id]
-    );
+  async getByIso(isoCode: string): Promise<Country | null> {
+    const query = `
+      SELECT *
+      FROM countries
+      WHERE iso_code = $1 AND hidden = false
+    `;
     
-    return {
-      total_destinations: parseInt(result.rows[0].total_destinations, 10),
-      total_visits: parseInt(result.rows[0].total_visits, 10)
-    };
+    const result = await this.pool.query<Country>(query, [isoCode]);
+    return result.rows[0] || null;
   }
 
-  async search(term: string): Promise<Country[]> {
-    const result = await this.pool.query<Country>(
-      `SELECT * FROM countries 
-       WHERE name ILIKE $1 OR abbreviation ILIKE $1
-       ORDER BY name ASC`,
-      [`%${term}%`]
-    );
-    return result.rows;
+  async getByIso3(isoCode3: string): Promise<Country | null> {
+    const query = `
+      SELECT *
+      FROM countries
+      WHERE iso_code3 = $1 AND hidden = false
+    `;
+    
+    const result = await this.pool.query<Country>(query, [isoCode3]);
+    return result.rows[0] || null;
   }
 
-  async findByContinent(continentId: string): Promise<Country[]> {
-    const result = await this.pool.query<Country>(
-      `SELECT * FROM countries 
-       WHERE continent_id = $1 AND hidden = false
-       ORDER BY name ASC`,
-      [continentId]
-    );
-    return result.rows;
+  async getByName(name: string): Promise<Country | null> {
+    const query = `
+      SELECT *
+      FROM countries
+      WHERE name = $1 AND hidden = false
+    `;
+    
+    const result = await this.pool.query<Country>(query, [name]);
+    return result.rows[0] || null;
   }
-} 
+
+  async getDestinationIds(countryId: number): Promise<number[]> {
+    const query = `
+      SELECT id 
+      FROM destinations 
+      WHERE country_id = $1 AND hidden = false
+      ORDER BY name ASC
+    `;
+    
+    const result = await this.pool.query<{ id: number }>(query, [countryId]);
+    return result.rows.map(row => row.id);
+  }
+}

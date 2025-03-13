@@ -1,30 +1,14 @@
-import { BaseEntity, BaseFilters } from './base';
-
-export interface Country extends BaseEntity {
+export interface Country {
+  id: number;
+  continent_id: number;
   name: string;
-  description: string | null;
-  abbreviation: string;
-  continent_id: string;
+  iso_code: string;
+  iso_code3: string;
+  visit_count: number;
+  destination_count: number;
   image_url: string | null;
-}
-
-export interface CountryFilters extends BaseFilters {
-  abbreviation?: string;
-  continent_id?: string;
-}
-
-export interface CountryInput {
-  name: string;
-  description?: string | null;
-  abbreviation: string;
-  continent_id: string;
-  image_url?: string | null;
-}
-
-export interface CountryUpdateInput {
-  name?: string;
-  description?: string | null;
-  abbreviation?: string;
-  continent_id?: string;
-  image_url?: string | null;
-} 
+  hidden: boolean;
+  created_at: Date;
+  updated_at: Date;
+  description: string | null;
+}  
