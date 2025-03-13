@@ -5,8 +5,14 @@ import { Context } from '../../types/context';
 export const languageResolvers: IResolvers = {
   Query: {
     languages: async (_, __, { pgPool }: Context) => {
-      const service = new LanguageService(pgPool);
-      return service.getAll();
+      try {
+        const service = new LanguageService(pgPool);
+        const languages = await service.getAll();
+        return languages || [];
+      } catch (error) {
+        console.error('Error fetching languages:', error);
+        return [];
+      }
     },
 
     language: async (_, { id }, { pgPool }: Context) => {

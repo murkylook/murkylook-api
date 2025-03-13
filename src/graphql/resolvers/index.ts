@@ -4,21 +4,25 @@ import { countryResolvers } from './country';
 import { destinationResolvers } from './destination';
 import { destinationTypeResolvers } from './destination-type';
 import { highlightResolvers } from './highlight';
+import { languageResolvers } from './language';
+import { translationResolvers } from './translation';
 
-// @ts-expect-error - This is a workaround to avoid TypeScript union type complexity
-const mergedResolvers = {
+const mergedResolvers: IResolvers = {
   Query: {
     ...continentResolvers.Query,
     ...countryResolvers.Query,
     ...destinationResolvers.Query,
     ...destinationTypeResolvers.Query,
-    ...highlightResolvers.Query
+    ...highlightResolvers.Query,
+    ...languageResolvers.Query,
+    ...translationResolvers.Query
   },
   Continent: continentResolvers.Continent,
   Country: countryResolvers.Country,
   Destination: destinationResolvers.Destination,
   DestinationType: destinationTypeResolvers.DestinationType,
   Highlight: highlightResolvers.Highlight,
-} as any as IResolvers;
+  Translation: translationResolvers.Translation,
+};
 
 export default mergedResolvers; 

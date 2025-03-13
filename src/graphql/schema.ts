@@ -4,80 +4,74 @@ export const typeDefs = gql`
   type Continent {
     id: ID!
     name: String!
-    code: String!
-    visitCount: Int!
-    countryCount: Int!
-    createdAt: DateTime!
-    updatedAt: DateTime!
-    hidden: Boolean!
-    imageUrl: String
+    abbreviation: String!
     description: String
+    image_url: String
+    total_countries: Int!
+    total_destinations: Int!
+    total_visits: Int!
     countries: [Country!]!
+    created_at: DateTime!
+    updated_at: DateTime!
   }
 
   type Country {
     id: ID!
-    continentId: ID!
     name: String!
-    isoCode: String!
-    isoCode3: String!
-    visitCount: Int!
-    destinationCount: Int!
-    imageUrl: String
-    hidden: Boolean!
-    createdAt: DateTime!
-    updatedAt: DateTime!
+    abbreviation: String!
+    iso_code: String!
+    iso_code3: String!
     description: String
+    image_url: String
     continent: Continent!
     destinations: [Destination!]!
+    created_at: DateTime!
+    updated_at: DateTime!
   }
 
   type DestinationType {
     id: ID!
     name: String!
     description: String
-    createdAt: DateTime!
-    updatedAt: DateTime!
-    iconName: String
-    destinationCount: Int!
+    icon_name: String
+    destination_count: Int!
     destinations: [Destination!]!
+    created_at: DateTime!
+    updated_at: DateTime!
   }
 
   type Destination {
     id: ID!
-    countryId: ID!
-    typeId: ID!
     name: String!
     description: String
-    latitude: Float
-    longitude: Float
-    foundedYear: Int
-    bestSeasonStart: Date
-    bestSeasonEnd: Date
-    visitCount: Int!
-    highlightCount: Int!
-    createdAt: DateTime!
-    updatedAt: DateTime!
-    imageUrl: String
-    hidden: Boolean!
     country: Country!
     type: DestinationType!
     highlights: [Highlight!]!
+    latitude: Float
+    longitude: Float
+    image_url: String
+    founded_year: Int
+    best_season_start: Int
+    best_season_end: Int
+    visit_count: Int!
+    highlight_count: Int!
+    visitStats: DestinationVisitStats!
+    created_at: DateTime!
+    updated_at: DateTime!
   }
 
   type Highlight {
     id: ID!
-    destinationId: ID!
     name: String!
     description: String
-    seenCount: Int!
-    createdAt: DateTime!
-    updatedAt: DateTime!
-    hidden: Boolean!
-    imageUrl: String
+    destination: Destination!
+    seen_count: Int!
+    image_url: String
     latitude: Float
     longitude: Float
-    destination: Destination!
+    viewStats: HighlightViewStats!
+    created_at: DateTime!
+    updated_at: DateTime!
   }
 
   type User {
@@ -85,144 +79,133 @@ export const typeDefs = gql`
     name: String!
     username: String!
     email: String!
-    createdAt: DateTime!
-    updatedAt: DateTime!
+    avatar_url: String
+    bio: String
+    preferences: JSON
+    is_active: Boolean!
+    last_login_at: DateTime
+    role: String!
     destinationVisits: [DestinationVisit!]!
     highlightViews: [HighlightView!]!
+    created_at: DateTime!
+    updated_at: DateTime!
   }
 
   type DestinationVisit {
     id: ID!
-    userId: ID!
-    destinationId: ID!
-    visitedAt: Date!
-    createdAt: DateTime!
     user: User!
     destination: Destination!
+    visited_at: DateTime!
+    created_at: DateTime!
+    updated_at: DateTime!
   }
 
   type HighlightView {
     id: ID!
-    userId: ID!
-    highlightId: ID!
-    seenAt: DateTime!
     user: User!
     highlight: Highlight!
+    seen_at: DateTime!
+    created_at: DateTime!
+    updated_at: DateTime!
+  }
+
+  type DestinationVisitStats {
+    total_visits: Int!
+    unique_visitors: Int!
+    last_visit: DateTime
+  }
+
+  type HighlightViewStats {
+    total_views: Int!
+    unique_viewers: Int!
+    last_view: DateTime
   }
 
   type Language {
     id: ID!
-    code: String!
     name: String!
-    isDefault: Boolean!
-    createdAt: DateTime!
-    updatedAt: DateTime!
+    code: String!
+    is_active: Boolean!
+    created_at: DateTime!
+    updated_at: DateTime!
   }
 
   type Translation {
     id: ID!
-    tableName: String!
-    columnName: String!
-    rowId: Int!
-    languageId: ID!
-    translatedText: String!
-    createdAt: DateTime!
-    updatedAt: DateTime!
     language: Language!
+    table_name: String!
+    row_id: ID!
+    column_name: String!
+    value: String!
+    created_at: DateTime!
+    updated_at: DateTime!
   }
 
-  scalar DateTime
-  scalar Date
-
   type Query {
-    # Continents
+    # Continent queries
     continents: [Continent!]!
-    continent(id: ID!): Continent
+    continentById(id: ID!): Continent
+    continentByCode(code: String!): Continent
 
-    # Countries
+    # Country queries
     countries: [Country!]!
-    country(id: ID!): Country
-    countriesByContinent(continentId: ID!): [Country!]!
+    countryById(id: ID!): Country
+    countryByIso(isoCode: String!): Country
+    countryByIso3(iso3Code: String!): Country
+    countryByName(name: String!): Country
 
-    # Destinations
+    # Destination queries
     destinations: [Destination!]!
     destination(id: ID!): Destination
     destinationsByCountry(countryId: ID!): [Destination!]!
     destinationsByType(typeId: ID!): [Destination!]!
+    destinationVisitsByUser(userId: ID!): [DestinationVisit!]!
+    destinationVisitsByDestination(destinationId: ID!): [DestinationVisit!]!
 
-    # Destination Types
+    # Destination type queries
     destinationTypes: [DestinationType!]!
     destinationType(id: ID!): DestinationType
+    destinationTypeByName(name: String!): DestinationType
 
-    # Highlights
+    # Highlight queries
     highlights: [Highlight!]!
     highlight(id: ID!): Highlight
     highlightsByDestination(destinationId: ID!): [Highlight!]!
+    highlightsByLocation(latitude: Float!, longitude: Float!, radiusKm: Float!): [Highlight!]!
+    highlightViewsByUser(userId: ID!): [HighlightView!]!
+    highlightViewsByHighlight(highlightId: ID!): [HighlightView!]!
 
-    # Users
+    # User queries
     users: [User!]!
     user(id: ID!): User
+    userByUsername(username: String!): User
     userByEmail(email: String!): User
 
-    # Visits and Views
-    destinationVisits: [DestinationVisit!]!
-    destinationVisitsByUser(userId: ID!): [DestinationVisit!]!
-    highlightViews: [HighlightView!]!
-    highlightViewsByUser(userId: ID!): [HighlightView!]!
-
-    # Languages and Translations
+    # Language queries
     languages: [Language!]!
     language(id: ID!): Language
+    languageByCode(code: String!): Language
+
+    # Translation queries
     translations: [Translation!]!
     translation(id: ID!): Translation
-    translatedText(tableName: String!, columnName: String!, rowId: Int!, languageCode: String!): String
+    translationsByLanguage(languageId: ID!): [Translation!]!
+    translationsByTableAndRow(tableName: String!, rowId: ID!): [Translation!]!
+    translationsByTableRowAndColumn(tableName: String!, rowId: ID!, columnName: String!): [Translation!]!
+    translationByTableRowColumnAndLanguage(
+      tableName: String!
+      rowId: ID!
+      columnName: String!
+      languageId: ID!
+    ): Translation
   }
 
   type Mutation {
-    # Continent mutations
-    createContinent(input: CreateContinentInput!): Continent!
-    updateContinent(id: ID!, input: UpdateContinentInput!): Continent!
-    deleteContinent(id: ID!): Boolean!
-
-    # Country mutations
-    createCountry(input: CreateCountryInput!): Country!
-    updateCountry(id: ID!, input: UpdateCountryInput!): Country!
-    deleteCountry(id: ID!): Boolean!
-
-    # Destination mutations
-    createDestination(input: CreateDestinationInput!): Destination!
-    updateDestination(id: ID!, input: UpdateDestinationInput!): Destination!
-    deleteDestination(id: ID!): Boolean!
-
-    # Destination Type mutations
-    createDestinationType(input: CreateDestinationTypeInput!): DestinationType!
-    updateDestinationType(id: ID!, input: UpdateDestinationTypeInput!): DestinationType!
-    deleteDestinationType(id: ID!): Boolean!
-
-    # Highlight mutations
-    createHighlight(input: CreateHighlightInput!): Highlight!
-    updateHighlight(id: ID!, input: UpdateHighlightInput!): Highlight!
-    deleteHighlight(id: ID!): Boolean!
-
-    # User mutations
-    createUser(input: CreateUserInput!): User!
-    updateUser(id: ID!, input: UpdateUserInput!): User!
-    deleteUser(id: ID!): Boolean!
-
-    # Visit and View mutations
-    createDestinationVisit(input: CreateDestinationVisitInput!): DestinationVisit!
-    deleteDestinationVisit(id: ID!): Boolean!
-    createHighlightView(input: CreateHighlightViewInput!): HighlightView!
-    deleteHighlightView(id: ID!): Boolean!
-
-    # Language mutations
-    createLanguage(input: CreateLanguageInput!): Language!
-    updateLanguage(id: ID!, input: UpdateLanguageInput!): Language!
-    deleteLanguage(id: ID!): Boolean!
-
-    # Translation mutations
-    createTranslation(input: CreateTranslationInput!): Translation!
-    updateTranslation(id: ID!, input: UpdateTranslationInput!): Translation!
-    deleteTranslation(id: ID!): Boolean!
+    # Visit/View mutations
+    recordDestinationVisit(userId: ID!, destinationId: ID!): DestinationVisit!
+    recordHighlightView(userId: ID!, highlightId: ID!): HighlightView!
   }
+
+  scalar DateTime
+  scalar JSON
 `;
