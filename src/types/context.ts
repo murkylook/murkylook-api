@@ -7,6 +7,7 @@ import { Continent } from './continent';
 import { Destination } from './destination';
 import { Highlight } from './highlight';
 import { Language } from './language';
+import { User } from './user';
 
 export interface Context {
     pgPool: Pool;
@@ -21,4 +22,5 @@ export interface DataLoaders {
   destinationLoader: DataLoader<number, Destination, number>;
   highlightLoader: DataLoader<number, Highlight, number>;
   languageLoader: DataLoader<number, Language, number>;
+  userLoader: DataLoader<number, User, number>;
 }

@@ -6,6 +6,7 @@ import { Destination } from '../../types/destination';
 import { DestinationType } from '../../types/destination-type';
 import { Highlight } from '../../types/highlight';
 import { Language } from '../../types/language';
+import { User } from '../../types/user';
 import { DataLoaders } from '../../types/context';
 
 export const createLoaders = (pgPool: Pool): DataLoaders => {
@@ -87,6 +88,19 @@ export const createLoaders = (pgPool: Pool): DataLoaders => {
     return ids.map(id => languagesById[id]);
   };
 
+  const batchLoadUser = async (ids: readonly number[]): Promise<User[]> => {
+    const result = await pgPool.query(
+      'SELECT * FROM users WHERE id = ANY($1) AND hidden = false',
+      [ids]
+    );
+    const usersById = result.rows.reduce((acc, user) => {
+      acc[user.id] = user;
+      return acc;
+    }, {} as Record<number, User>);
+    
+    return ids.map(id => usersById[id]);
+  };
+
   return {
     continentLoader: new DataLoader(batchLoadContinent),
     countryLoader: new DataLoader(batchLoadCountry),
@@ -94,5 +108,6 @@ export const createLoaders = (pgPool: Pool): DataLoaders => {
     destinationTypeLoader: new DataLoader(batchLoadDestinationType),
     highlightLoader: new DataLoader(batchLoadHighlight),
     languageLoader: new DataLoader(batchLoadLanguage),
+    userLoader: new DataLoader(batchLoadUser),
   };
 }; 
