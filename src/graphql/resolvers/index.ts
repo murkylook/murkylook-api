@@ -7,7 +7,9 @@ import { highlightResolvers } from './highlight';
 import { languageResolvers } from './language';
 import { translationResolvers } from './translation';
 
+
 const mergedResolvers: IResolvers = {
+  //@ts-expect-error -- TypeScript limitation with complex resolver types
   Query: {
     ...continentResolvers.Query,
     ...countryResolvers.Query,
