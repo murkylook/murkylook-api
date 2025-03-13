@@ -47,7 +47,21 @@ const corsOptions = {
 const server = new ApolloServer({
   typeDefs,
   resolvers,
-  plugins: [ApolloServerPluginDrainHttpServer({ httpServer })]
+  plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
+  formatError: (error) => {
+    // Log the error for debugging
+    console.error('GraphQL Error:', error);
+
+    // Return a sanitized error message to the client
+    return {
+      message: error.message,
+      locations: error.locations,
+      path: error.path,
+      extensions: {
+        code: error.extensions?.code || 'INTERNAL_SERVER_ERROR'
+      }
+    };
+  }
 });
 
 // Start the server
@@ -60,12 +74,22 @@ async function startServer() {
     cors<cors.CorsRequest>(corsOptions),
     json(),
     expressMiddleware(server, {
-      context: async () => ({
+      context: async ({ req }) => ({
         pgPool,
+        req,
         loaders: createLoaders(pgPool)
       })
     })
   );
+
+  // Global error handler
+  app.use((err: Error, req: express.Request, res: express.Response, _next: express.NextFunction) => {
+    console.error('Unhandled Error:', err);
+    res.status(500).json({
+      error: 'Internal Server Error',
+      message: process.env.NODE_ENV === 'development' ? err.message : undefined
+    });
+  });
 
   // Start the HTTP server
   await new Promise<void>((resolve) => httpServer.listen({ port: process.env.PORT || 4000 }, resolve));
@@ -74,6 +98,7 @@ async function startServer() {
 
 startServer().catch((err) => {
   console.error('Failed to start server:', err);
+  process.exit(1);
 });
 
 /**
