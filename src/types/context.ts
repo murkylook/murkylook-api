@@ -8,6 +8,7 @@ import { Destination } from './destination';
 import { Highlight } from './highlight';
 import { Language } from './language';
 import { User } from './user';
+import { SearchService } from '../services/search.service';
 
 export interface Context {
     pgPool: Pool;
@@ -17,6 +18,7 @@ export interface Context {
         id: number;
         role: string;
     };
+    searchService: SearchService;
 }
 
 export interface DataLoaders {

@@ -146,6 +146,14 @@ export const typeDefs = gql`
     token: String!
   }
 
+  type SearchResult {
+    type: String!
+    id: Int!
+    name: String!
+    description: String
+    score: Float!
+  }
+
   type Query {
     # Continent queries
     continents: [Continent!]!
@@ -206,6 +214,9 @@ export const typeDefs = gql`
 
     # Auth queries
     me: User
+
+    # Search queries
+    search(query: String!): [SearchResult!]!
   }
 
   type Mutation {

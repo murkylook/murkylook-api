@@ -6,7 +6,9 @@ import { destinationTypeResolvers } from './destination-type';
 import { highlightResolvers } from './highlight';
 import { languageResolvers } from './language';
 import { translationResolvers } from './translation';
-
+import { searchResolvers } from './search';
+import { userResolvers } from './user';
+import { authResolvers } from './auth';
 
 const mergedResolvers: IResolvers = {
   //@ts-expect-error -- TypeScript limitation with complex resolver types
@@ -17,7 +19,10 @@ const mergedResolvers: IResolvers = {
     ...destinationTypeResolvers.Query,
     ...highlightResolvers.Query,
     ...languageResolvers.Query,
-    ...translationResolvers.Query
+    ...translationResolvers.Query,
+    ...searchResolvers.Query,
+    ...userResolvers.Query,
+    ...authResolvers.Query
   },
   Continent: continentResolvers.Continent,
   Country: countryResolvers.Country,
@@ -25,6 +30,11 @@ const mergedResolvers: IResolvers = {
   DestinationType: destinationTypeResolvers.DestinationType,
   Highlight: highlightResolvers.Highlight,
   Translation: translationResolvers.Translation,
+  User: userResolvers.User,
+  //@ts-expect-error -- TypeScript limitation with complex resolver types
+  Mutation: {
+    ...authResolvers.Mutation
+  }
 };
 
 export default mergedResolvers; 

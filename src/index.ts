@@ -1,6 +1,6 @@
 import express from 'express';
 import { ApolloServer } from '@apollo/server';
-import { expressMiddleware } from '@apollo/server/express4';
+import { expressMiddleware, ExpressContextFunctionArgument } from '@apollo/server/express4';
 import { ApolloServerPluginDrainHttpServer } from '@apollo/server/plugin/drainHttpServer';
 import http from 'http';
 import dotenv from 'dotenv';
@@ -11,6 +11,11 @@ import { pgPool } from './config/database';
 import { typeDefs } from './graphql/schema';
 import resolvers from './graphql/resolvers';
 import { createLoaders } from './graphql/dataloaders';
+import { SearchService } from './services/search.service';
+import { BaseContext } from '@apollo/server/dist/esm/index';
+import { Request, Response } from 'express';
+import { Pool } from 'pg';
+import { DataLoaders } from './types/context';
 
 dotenv.config();
 
@@ -44,25 +49,26 @@ const corsOptions = {
   credentials: true
 };
 
+const searchService = new SearchService();
+
+// Initialize search indices
+searchService.initializeIndices().catch(console.error);
+
+interface MyContext extends BaseContext {
+  pgPool: Pool;
+  req: Request;
+  res: Response;
+  loaders: DataLoaders;
+  user?: { id: number; role: string };
+  searchService: SearchService;
+}
+
 // Create the Apollo Server
-const server = new ApolloServer({
+const server = new ApolloServer<MyContext>({
   typeDefs,
   resolvers,
   plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
-  formatError: (error) => {
-    // Log the error for debugging
-    console.error('GraphQL Error:', error);
-
-    // Return a sanitized error message to the client
-    return {
-      message: error.message,
-      locations: error.locations,
-      path: error.path,
-      extensions: {
-        code: error.extensions?.code || 'INTERNAL_SERVER_ERROR'
-      }
-    };
-  }
+  includeStacktraceInErrorResponses: process.env.NODE_ENV !== 'production'
 });
 
 // Start the server
@@ -75,12 +81,14 @@ async function startServer() {
     cors<cors.CorsRequest>(corsOptions),
     json(),
     cookieParser(),
-    expressMiddleware(server, {
-      context: async ({ req }) => ({
+    expressMiddleware<MyContext>(server, {
+      context: async ({ req, res }: ExpressContextFunctionArgument): Promise<MyContext> => ({
         pgPool,
         req,
+        res,
         loaders: createLoaders(pgPool),
-        user: (req as any).user
+        user: (req as any).user,
+        searchService
       })
     })
   );
