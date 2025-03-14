@@ -116,4 +116,12 @@ export class DestinationService {
     const result = await this.pool.query(query, [destinationId]);
     return result.rows[0];
   }
+
+  async getBySlug(slug: string): Promise<Destination | null> {
+    const result = await this.pool.query(
+      'SELECT * FROM destinations WHERE slug = $1 AND hidden = false',
+      [slug]
+    );
+    return result.rows[0] || null;
+  }
 }

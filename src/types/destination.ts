@@ -3,6 +3,7 @@ export interface Destination {
   country_id: number;
   type_id: number;
   name: string;
+  slug: string;
   description: string | null;
   latitude: number | null;
   longitude: number | null;

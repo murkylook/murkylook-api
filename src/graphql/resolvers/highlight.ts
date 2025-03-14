@@ -34,6 +34,11 @@ export const highlightResolvers: IResolvers = {
             const service = new HighlightService(pgPool);
             return service.getViewsByHighlight(Number(highlightId));
         },
+
+        highlightBySlug: async (_, { slug }, { pgPool }: Context) => {
+            const service = new HighlightService(pgPool);
+            return service.getBySlug(slug);
+        },
     },
 
     Highlight: {

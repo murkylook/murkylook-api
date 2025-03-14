@@ -4,6 +4,7 @@ export const typeDefs = gql`
   type Continent {
     id: ID!
     name: String!
+    slug: String!
     abbreviation: String!
     description: String
     image_url: String
@@ -18,6 +19,7 @@ export const typeDefs = gql`
   type Country {
     id: ID!
     name: String!
+    slug: String!
     abbreviation: String!
     iso_code: String!
     iso_code3: String!
@@ -43,6 +45,7 @@ export const typeDefs = gql`
   type Destination {
     id: ID!
     name: String!
+    slug: String!
     description: String
     country: Country!
     type: DestinationType!
@@ -63,6 +66,7 @@ export const typeDefs = gql`
   type Highlight {
     id: ID!
     name: String!
+    slug: String!
     description: String
     destination: Destination!
     seen_count: Int!
@@ -159,6 +163,7 @@ export const typeDefs = gql`
     continents: [Continent!]!
     continentById(id: ID!): Continent
     continentByCode(code: String!): Continent
+    continentBySlug(slug: String!): Continent
 
     # Country queries
     countries: [Country!]!
@@ -166,6 +171,7 @@ export const typeDefs = gql`
     countryByIso(isoCode: String!): Country
     countryByIso3(iso3Code: String!): Country
     countryByName(name: String!): Country
+    countryBySlug(slug: String!): Country
 
     # Destination queries
     destinations: [Destination!]!
@@ -174,6 +180,7 @@ export const typeDefs = gql`
     destinationsByType(typeId: ID!): [Destination!]!
     destinationVisitsByUser(userId: ID!): [DestinationVisit!]!
     destinationVisitsByDestination(destinationId: ID!): [DestinationVisit!]!
+    destinationBySlug(slug: String!): Destination
 
     # Destination type queries
     destinationTypes: [DestinationType!]!
@@ -187,6 +194,7 @@ export const typeDefs = gql`
     highlightsByLocation(latitude: Float!, longitude: Float!, radiusKm: Float!): [Highlight!]!
     highlightViewsByUser(userId: ID!): [HighlightView!]!
     highlightViewsByHighlight(highlightId: ID!): [HighlightView!]!
+    highlightBySlug(slug: String!): Highlight
 
     # User queries
     users: [User!]!

@@ -34,6 +34,11 @@ export const destinationResolvers: IResolvers = {
             const service = new DestinationService(pgPool);
             return service.getVisitsByDestination(Number(destinationId));
         },
+
+        destinationBySlug: async (_, { slug }, { pgPool }: Context) => {
+            const service = new DestinationService(pgPool);
+            return service.getBySlug(slug);
+        },
     },
 
     Destination: {

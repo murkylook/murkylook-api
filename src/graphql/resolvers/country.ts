@@ -25,6 +25,10 @@ export const countryResolvers: IResolvers = {
             const service = new CountryService(pgPool);
             return service.getAll();
         },
+        countryBySlug: async (_, { slug }, { pgPool }: Context) => {
+            const service = new CountryService(pgPool);
+            return service.getBySlug(slug);
+        },
     },
 
     Country: {

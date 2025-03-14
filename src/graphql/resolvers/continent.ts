@@ -19,6 +19,11 @@ export const continentResolvers: IResolvers = {
             const service = new ContinentService(pgPool);
             return service.getAll();
         },
+
+        continentBySlug: async (_, { slug }, { pgPool }: Context) => {
+            const service = new ContinentService(pgPool);
+            return service.getBySlug(slug);
+        },
     },
 
     Continent: {

@@ -2,6 +2,7 @@ export interface Highlight {
     id: number;
     destination_id: number;
     name: string;
+    slug: string;
     description: string | null;
     seen_count: number;
     created_at: Date;

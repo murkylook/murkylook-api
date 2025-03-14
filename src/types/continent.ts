@@ -1,6 +1,7 @@
 export interface Continent {
   id: number;
   name: string;
+  slug: string;
   code: string;
   visit_count: number;
   country_count: number;

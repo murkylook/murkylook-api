@@ -108,4 +108,12 @@ export class HighlightService {
     const result = await this.pool.query(query, [highlightId]);
     return result.rows[0];
   }
+
+  async getBySlug(slug: string): Promise<Highlight | null> {
+    const result = await this.pool.query(
+      'SELECT * FROM highlights WHERE slug = $1 AND hidden = false',
+      [slug]
+    );
+    return result.rows[0] || null;
+  }
 }

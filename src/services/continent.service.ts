@@ -50,4 +50,12 @@ export class ContinentService {
     const result = await this.pool.query<Country>(query, [continentId]);
     return result.rows;
   }
+
+  async getBySlug(slug: string): Promise<Continent | null> {
+    const result = await this.pool.query(
+      'SELECT * FROM continents WHERE slug = $1 AND hidden = false',
+      [slug]
+    );
+    return result.rows[0] || null;
+  }
 } 

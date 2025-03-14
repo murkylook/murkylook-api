@@ -71,4 +71,12 @@ export class CountryService {
     const result = await this.pool.query<{ id: number }>(query, [countryId]);
     return result.rows.map(row => row.id);
   }
+
+  async getBySlug(slug: string): Promise<Country | null> {
+    const result = await this.pool.query(
+      'SELECT * FROM countries WHERE slug = $1 AND hidden = false',
+      [slug]
+    );
+    return result.rows[0] || null;
+  }
 }

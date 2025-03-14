@@ -2,6 +2,7 @@ export interface Country {
   id: number;
   continent_id: number;
   name: string;
+  slug: string;
   iso_code: string;
   iso_code3: string;
   visit_count: number;
