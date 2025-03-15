@@ -77,13 +77,41 @@ export class SearchService {
   }
 
   async search(query: string): Promise<SearchResult[]> {
+    if (query.length < 3) {
+      return [];
+    }
+
     const { hits } = await this.client.search({
       index: ['destinations', 'countries', 'continents', 'highlights'],
       query: {
-        multi_match: {
-          query,
-          fields: ['name^2', 'description'], // name field has higher weight
-          fuzziness: 'AUTO'
+        bool: {
+          should: [
+            {
+              multi_match: {
+                query,
+                fields: ['name^3', 'description'],
+                type: 'phrase_prefix',
+                boost: 2
+              }
+            },
+            {
+              multi_match: {
+                query,
+                fields: ['name^2', 'description'],
+                fuzziness: 'AUTO',
+                prefix_length: 2
+              }
+            },
+            {
+              multi_match: {
+                query,
+                fields: ['name^2', 'description'],
+                type: 'best_fields',
+                operator: 'and',
+                boost: 1.5
+              }
+            }
+          ]
         }
       }
     });
@@ -108,9 +136,44 @@ export class SearchService {
           index,
           mappings: {
             properties: {
-              name: { type: 'text', analyzer: 'standard' },
-              description: { type: 'text', analyzer: 'standard' },
+              name: { 
+                type: 'text',
+                analyzer: 'standard',
+                fields: {
+                  keyword: {
+                    type: 'keyword',
+                    ignore_above: 256
+                  },
+                  ngram: {
+                    type: 'text',
+                    analyzer: 'edge_ngram_analyzer'
+                  }
+                }
+              },
+              description: { 
+                type: 'text',
+                analyzer: 'standard'
+              },
               type: { type: 'keyword' }
+            }
+          },
+          settings: {
+            analysis: {
+              analyzer: {
+                edge_ngram_analyzer: {
+                  type: 'custom',
+                  tokenizer: 'edge_ngram_tokenizer',
+                  filter: ['lowercase']
+                }
+              },
+              tokenizer: {
+                edge_ngram_tokenizer: {
+                  type: 'edge_ngram',
+                  min_gram: 2,
+                  max_gram: 20,
+                  token_chars: ['letter', 'digit']
+                }
+              }
             }
           }
         });

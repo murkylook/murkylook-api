@@ -1,7 +1,7 @@
 {
   "name": "murkylook-api",
   "version": "1.0.0",
-  "description": "GraphQL API for Murkylook travel application",
+  "description": "GraphQL API for MurkyLook travel application",
   "main": "src/index.ts",
   "scripts": {
     "start": "node dist/index.js",
