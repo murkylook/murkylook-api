@@ -1,13 +1,7 @@
 import { Pool } from 'pg';
+import { HomeStats } from '../types/home';
+import { Destination } from '../types/destination';
 
-export type HomeStats = {
-  totalDestinations: number;
-  totalCountries: number;
-  totalHighlights: number;
-  totalUsers: number;
-  totalVisits: number;
-  totalViews: number;
-};
 
 export class HomeService {
   constructor(private readonly pool: Pool) {}
@@ -34,6 +28,18 @@ export class HomeService {
       totalVisits: parseInt(stats.total_visits),
       totalViews: parseInt(stats.total_views)
     };
+  }
+
+  async getFeaturedDestinations(): Promise<Destination[]> {
+    // In a real application, this would be fetched from the database
+    // based on criteria like most visited, highest rated, etc.
+    // Fetch from a database from destinations table based on name Paris Berlin and Barcelona
+    const query = `
+      SELECT * FROM destinations
+      WHERE name IN ('Paris', 'Berlin', 'Barcelona')
+    `;
+    const result = await this.pool.query(query);
+    return result.rows;
   }
 
   async getActiveStats(): Promise<{

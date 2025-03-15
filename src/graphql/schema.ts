@@ -177,7 +177,8 @@ export const typeDefs = gql`
     # Home stats queries
     stats: HomeStats!
     activeStats: ActiveStats!
-
+    featuredDestinations: [Destination!]!
+    
     # Continent queries
     continents: [Continent!]!
     continentById(id: ID!): Continent

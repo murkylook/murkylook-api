@@ -13,5 +13,10 @@ export const homeResolvers: IResolvers = {
       const service = new HomeService(pgPool);
       return service.getActiveStats();
     },
+
+    featuredDestinations: async (_, __, { pgPool }: Context) => {
+      const service = new HomeService(pgPool);
+      return service.getFeaturedDestinations();
+    },
   },
 }; 
