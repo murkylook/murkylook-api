@@ -9,6 +9,7 @@ import { translationResolvers } from './translation';
 import { searchResolvers } from './search';
 import { userResolvers } from './user';
 import { authResolvers } from './auth';
+import { homeResolvers } from './home';
 
 const mergedResolvers: IResolvers = {
   //@ts-expect-error -- TypeScript limitation with complex resolver types
@@ -22,7 +23,8 @@ const mergedResolvers: IResolvers = {
     ...translationResolvers.Query,
     ...searchResolvers.Query,
     ...userResolvers.Query,
-    ...authResolvers.Query
+    ...authResolvers.Query,
+    ...homeResolvers.Query
   },
   Continent: continentResolvers.Continent,
   Country: countryResolvers.Country,

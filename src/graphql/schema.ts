@@ -1,6 +1,21 @@
 import { gql } from 'apollo-server-express';
 
 export const typeDefs = gql`
+  type HomeStats {
+    totalDestinations: Int!
+    totalCountries: Int!
+    totalHighlights: Int!
+    totalUsers: Int!
+    totalVisits: Int!
+    totalViews: Int!
+  }
+
+  type ActiveStats {
+    recentVisits: Int!
+    recentViews: Int!
+    activeUsers: Int!
+  }
+
   type Continent {
     id: ID!
     name: String!
@@ -159,6 +174,10 @@ export const typeDefs = gql`
   }
 
   type Query {
+    # Home stats queries
+    stats: HomeStats!
+    activeStats: ActiveStats!
+
     # Continent queries
     continents: [Continent!]!
     continentById(id: ID!): Continent
