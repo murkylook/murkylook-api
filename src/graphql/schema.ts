@@ -20,12 +20,11 @@ export const typeDefs = gql`
     id: ID!
     name: String!
     slug: String!
-    abbreviation: String!
+    code: String!
     description: String
     image_url: String
-    total_countries: Int!
-    total_destinations: Int!
-    total_visits: Int!
+    country_count: Int!
+    visit_count: Int!
     countries: [Country!]!
     created_at: DateTime!
     updated_at: DateTime!
@@ -35,7 +34,6 @@ export const typeDefs = gql`
     id: ID!
     name: String!
     slug: String!
-    abbreviation: String!
     iso_code: String!
     iso_code3: String!
     description: String
