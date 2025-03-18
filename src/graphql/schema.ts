@@ -40,6 +40,8 @@ export const typeDefs = gql`
     image_url: String
     continent: Continent!
     destinations: [Destination!]!
+    visit_count: Int!
+    destination_count: Int!
     created_at: DateTime!
     updated_at: DateTime!
   }
