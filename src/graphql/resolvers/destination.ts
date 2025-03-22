@@ -39,6 +39,11 @@ export const destinationResolvers: IResolvers = {
             const service = new DestinationService(pgPool);
             return service.getBySlug(slug);
         },
+
+        destinationBySlugAndIso: async (_, { slug, isoCode }, { pgPool }: Context) => {
+            const service = new DestinationService(pgPool);
+            return service.getBySlugAndIso(slug, isoCode);
+        },
     },
 
     Destination: {

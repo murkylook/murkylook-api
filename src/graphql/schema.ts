@@ -201,6 +201,7 @@ export const typeDefs = gql`
     destinationVisitsByUser(userId: ID!): [DestinationVisit!]!
     destinationVisitsByDestination(destinationId: ID!): [DestinationVisit!]!
     destinationBySlug(slug: String!): Destination
+    destinationBySlugAndIso(slug: String!, isoCode: String!): Destination
 
     # Destination type queries
     destinationTypes: [DestinationType!]!

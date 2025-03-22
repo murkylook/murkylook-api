@@ -124,4 +124,18 @@ export class DestinationService {
     );
     return result.rows[0] || null;
   }
+
+  async getBySlugAndIso(slug: string, isoCode: string): Promise<Destination | null> {
+    const query = `
+      SELECT d.*
+      FROM destinations d
+      JOIN countries c ON d.country_id = c.id
+      WHERE d.slug = $1 
+      AND c.iso_code = $2 
+      AND d.hidden = false
+    `;
+    
+    const result = await this.pool.query<Destination>(query, [slug, isoCode]);
+    return result.rows[0] || null;
+  }
 }
