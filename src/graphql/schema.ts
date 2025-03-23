@@ -216,6 +216,7 @@ export const typeDefs = gql`
     highlightViewsByUser(userId: ID!): [HighlightView!]!
     highlightViewsByHighlight(highlightId: ID!): [HighlightView!]!
     highlightBySlug(slug: String!): Highlight
+    highlightBySlugAndDestinationSlug(slug: String!, destinationSlug: String!): Highlight
 
     # User queries
     users: [User!]!

@@ -15,6 +15,11 @@ export const highlightResolvers: IResolvers = {
             return service.getById(Number(id));
         },
 
+        highlightBySlugAndDestinationSlug: async (_, { slug, destinationSlug }, { pgPool }: Context) => {
+            const service = new HighlightService(pgPool);
+            return service.getBySlugAndDestinationSlug(slug, destinationSlug);
+        },
+
         highlightsByDestination: async (_, { destinationId }, { pgPool }: Context) => {
             const service = new HighlightService(pgPool);
             return service.getByDestination(Number(destinationId));

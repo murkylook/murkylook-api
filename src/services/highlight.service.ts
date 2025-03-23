@@ -40,6 +40,18 @@ export class HighlightService {
     return result.rows;
   }
 
+  async getBySlugAndDestinationSlug(slug: string, destinationSlug: string): Promise<Highlight | null> {
+    const query = `
+      SELECT h.*
+      FROM highlights h
+      JOIN destinations d ON h.destination_id = d.id
+      WHERE h.slug = $1 AND d.slug = $2 AND h.hidden = false
+    `;
+
+    const result = await this.pool.query<Highlight>(query, [slug, destinationSlug]);
+    return result.rows[0] || null;
+  }
+
   async getByCoordinates(latitude: number, longitude: number, radiusKm: number): Promise<Highlight[]> {
     const query = `
       SELECT *
